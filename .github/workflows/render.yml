@@ -1,3 +1,4 @@
+# aiu-render
 # Cloud render of one AI University lesson video, split across parallel runners (public repo → free Actions minutes).
 # Started by video-studio/scripts/ielts_batch.py, which uploads the lesson's spec + voice files as release "in-<id>"
 # (deleted again right after the render). The finished MP4 is a 1-day workflow artifact "out-<id>", downloaded and deleted by the script.
