@@ -23,7 +23,7 @@ const soft = (f: number, fps: number, d: number) => spring({ frame: f - d, fps, 
 const EMOJI = `${EMOJI_FONT},'Segoe UI Emoji','Apple Color Emoji',sans-serif`;
 const INK = "#2A1B5C";
 
-export type Part = { v: string; t: string };
+export type Part = { v: string; t: string; card?: boolean };
 export type Scene = { type: string; vo: Part[]; audio: string; audioA?: string; frames: number; voAt: number; voFrames: number; aAt?: number; think?: number; [k: string]: any };
 export type Spec = { id: string; title: string; sub: string; color: string; script: "latin" | "bangla" | "arabic"; scenes: Scene[]; total: number };
 
@@ -293,7 +293,63 @@ const Song: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
   );
 };
 
-const VIEW: Record<string, React.FC<{ sp: Spec; sc: Scene }>> = { intro: Intro, letter: Letter, recap: Recap, quiz: Quiz, next: Next, song: Song, outro: Outro };
+// ভাষার জাদু: এক ছবি, তিন ভাষার কার্ড — যে ভাষায় বলা হচ্ছে সেই কার্ড জ্বলে ওঠে
+const LANG_LABEL: Record<string, string> = { bn: "বাংলা", en: "English", ar: "আরবি" };
+const partStarts = (sc: Scene) => { const out: number[] = []; let t = sc.voAt; for (const pf of sc.partFrames || []) { out.push(t); t += pf + 5; } return out; };
+const Word3: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
+  const f = useCurrentFrame(), { fps } = useVideoConfig();
+  const ps = partStarts(sc), parts: Part[] = sc.vo;
+  const langs = ["bn", "en", "ar"], firstOf = (lg: string) => { const i = parts.findIndex((p) => p.v === lg && p.card); return i < 0 ? sc.voAt + 20 : ps[i]; };
+  const playingLang = (() => { for (let i = ps.length - 1; i >= 0; i--) if (f >= ps[i]) return f < ps[i] + (sc.partFrames[i] || 0) && parts[i].card ? parts[i].v : ""; return ""; })();
+  return (
+    <AbsoluteFill>
+      <Sequence from={2} durationInFrames={20}><Audio src={staticFile("kids/_shared/pop.mp3")} volume={0.45} /></Sequence>
+      <div style={{ position: "absolute", left: 660, top: 50, width: 600, height: 420, borderRadius: 70, background: "#fff", boxShadow: "0 18px 0 rgba(42,27,92,.12)", display: "grid", placeItems: "center", transform: `scale(${pop(f, fps, 2)})` }}>
+        <div style={{ fontFamily: EMOJI, fontSize: 280, lineHeight: 1, transform: `translateY(${Math.sin(f / 8) * 12}px) rotate(${Math.sin(f / 11) * 5}deg)` }}>{sc.pic}</div>
+      </div>
+      <div style={{ position: "absolute", top: 540, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 40 }}>
+        {langs.map((lg) => {
+          const at = firstOf(lg), s = pop(f, fps, at), hot = playingLang === lg;
+          return (
+            <div key={lg} style={{ width: 500, height: 300, borderRadius: 50, background: hot ? sp.color : "#fff", color: hot ? "#fff" : INK, transform: `scale(${s * (hot ? 1.08 : 1)}) translateY(${hot ? -14 : 0}px)`, boxShadow: "0 14px 0 rgba(42,27,92,.14)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <div style={{ fontFamily: BN, fontWeight: 700, fontSize: 40, opacity: 0.8 }}>{LANG_LABEL[lg]}</div>
+              <div style={{ fontFamily: lg === "ar" ? NASKH : lg === "en" ? FRED : BN, fontWeight: 700, fontSize: lg === "ar" ? 100 : 96, lineHeight: 1.15, direction: lg === "ar" ? "rtl" : "ltr" }}>{sc[lg]}</div>
+              {lg === "ar" ? <div style={{ fontFamily: BN, fontWeight: 700, fontSize: 40, opacity: 0.85 }}>{sc.tr}</div> : null}
+            </div>
+          );
+        })}
+      </div>
+      <Tuni size={220} talking={f > sc.voAt && f < sc.voAt + sc.voFrames} x={70} y={160} />
+    </AbsoluteFill>
+  );
+};
+
+// তিন ভাষার রিক্যাপ: ৪টি ছবি, একে একে
+const Recap3: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
+  const f = useCurrentFrame(), { fps } = useVideoConfig();
+  const W: any[] = sc.words, n = W.length, on = Math.min(n - 1, Math.floor(interpolate(f, [sc.voAt + sc.voFrames * 0.12, sc.voAt + sc.voFrames], [0, n], clamp)));
+  return (
+    <AbsoluteFill>
+      <div style={{ position: "absolute", top: 70, width: "100%", textAlign: "center", fontFamily: BN, fontWeight: 800, fontSize: 84, color: "#fff", textShadow: "0 6px 0 #3A7BD5" }}>এবার একসাথে বলি!</div>
+      <div style={{ position: "absolute", top: 240, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 36 }}>
+        {W.map((w, i) => {
+          const hot = f > sc.voAt + sc.voFrames * 0.12 && i === on;
+          return (
+            <div key={i} style={{ width: 400, height: 560, borderRadius: 56, background: hot ? sp.color : "#fff", color: hot ? "#fff" : INK, transform: `scale(${pop(f, fps, 6 + i * 6) * (hot ? 1.06 : 1)}) translateY(${hot ? -20 : 0}px)`, boxShadow: "0 16px 0 rgba(42,27,92,.14)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <div style={{ fontFamily: EMOJI, fontSize: 170, lineHeight: 1.1 }}>{w.pic}</div>
+              <div style={{ fontFamily: BN, fontWeight: 800, fontSize: 64 }}>{w.bn}</div>
+              <div style={{ fontFamily: FRED, fontWeight: 700, fontSize: 58 }}>{w.en}</div>
+              <div style={{ fontFamily: NASKH, fontWeight: 700, fontSize: 66, direction: "rtl" }}>{w.ar}</div>
+            </div>
+          );
+        })}
+      </div>
+      <Tuni size={200} talking={f > sc.voAt && f < sc.voAt + sc.voFrames} x={60} y={840} />
+    </AbsoluteFill>
+  );
+};
+
+const VIEW: Record<string, React.FC<{ sp: Spec; sc: Scene }>> = { intro: Intro, letter: Letter, recap: Recap, quiz: Quiz, next: Next, song: Song, word3: Word3, recap3: Recap3, outro: Outro };
 
 export const KidsVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
   const f = useCurrentFrame();
