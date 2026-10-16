@@ -1,0 +1,71 @@
+# Cloud render of one AI University lesson video, split across parallel runners (public repo → free Actions minutes).
+# Started by video-studio/scripts/ielts_batch.py, which uploads the lesson's spec + voice files as release "in-<id>"
+# (deleted again right after the render). The finished MP4 is a 1-day workflow artifact "out-<id>", downloaded and deleted by the script.
+# Nothing secret lives here: no API keys, no course videos.
+name: render
+run-name: render ${{ inputs.id }}
+on:
+  workflow_dispatch:
+    inputs:
+      id: { description: "lesson id", required: true }
+      frames: { description: "total frames", required: true }
+      chunks: { description: "parallel chunks", default: "4" }
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - id: m
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          n = int("${{ inputs.chunks }}"); t = int("${{ inputs.frames }}")
+          step = -(-t // n)
+          ch = [{"i": i, "a": i * step, "b": min(t, (i + 1) * step) - 1} for i in range(n) if i * step < t]
+          print("matrix=" + json.dumps({"include": ch}))
+          EOF
+
+  chunk:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --no-audit --no-fund
+      - name: fonts
+        run: mkdir -p ~/.local/share/fonts && cp assets/fonts/*.ttf ~/.local/share/fonts/ && fc-cache -f >/dev/null
+      - name: lesson inputs
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release download "in-${{ inputs.id }}" -p "in-${{ inputs.id }}.tar.gz" -D /tmp -R "${{ github.repository }}"
+          tar xzf "/tmp/in-${{ inputs.id }}.tar.gz" -C public
+      - name: render frames ${{ matrix.a }}-${{ matrix.b }}
+        run: npx remotion render src/ielts/cloud.ts IeltsLesson "out/c${{ matrix.i }}.mp4" --props="public/ielts/${{ inputs.id }}/props.json" --frames=${{ matrix.a }}-${{ matrix.b }} --gl=swangle --concurrency=100% --crf=18 --log=error
+      - uses: actions/upload-artifact@v4
+        with: { name: "c-${{ inputs.id }}-${{ matrix.i }}", path: "out/c${{ matrix.i }}.mp4", retention-days: 1 }
+
+  merge:
+    needs: [chunk]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: parts, pattern: "c-${{ inputs.id }}-*", merge-multiple: true }
+      - name: join + loudness
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y ffmpeg >/dev/null
+          ls parts | grep -E '^c[0-9]+\.mp4$' | sort -V | sed 's#^#file parts/#' > list.txt
+          ffmpeg -v error -f concat -safe 0 -i list.txt -c copy joined.mp4
+          ffmpeg -v error -i joined.mp4 -map 0:v -map 0:a -c:v copy -af loudnorm=I=-14:TP=-1:LRA=11 -c:a aac -b:a 192k -movflags +faststart "${{ inputs.id }}.mp4"
+          ls -la "${{ inputs.id }}.mp4"
+      - uses: actions/upload-artifact@v4
+        with: { name: "out-${{ inputs.id }}", path: "${{ inputs.id }}.mp4", retention-days: 1 }
