@@ -3,7 +3,7 @@
 // mouse moves to the command line, the command is typed key by key (click sounds), Enter, the lab's REAL answer
 // (captured by scripts/gds_capture.mjs) prints line by line, then the camera zooms to each marked part with a numbered callout.
 // Spec: src/gds/specs/<id>.json, timed by scripts/gds_make.py. Scene types:
-// title · points · term · anatomy · gds3 · note · myth · recap · quizQ · quizA · outro
+// title · points · term · anatomy · gds3 · flow · vs · note · myth · recap · quizQ · quizA · outro
 import React from "react";
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender } from "remotion";
 import { loadFont } from "@remotion/google-fonts/JetBrainsMono";
@@ -398,7 +398,64 @@ const SOutro: React.FC<P> = (p) => {
   );
 };
 
-const MAP: Record<string, React.FC<any>> = { title: STitle, points: SPoints, term: STerm, anatomy: SAnatomy, gds3: SGds3, note: SNote, myth: SMyth, recap: SRecap, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer />, outro: SOutro };
+// a process as steps joined by arrows; the active step follows the narration
+const SFlow: React.FC<P> = (p) => {
+  const { s } = p; const f = useCurrentFrame(); const { fps } = useVideoConfig(); const n = s.steps.length;
+  const cols = n <= 4 ? n : Math.ceil(n / 2), rows = Math.ceil(n / cols), w = (1660 - (cols - 1) * 70) / cols;
+  return (
+    <AbsoluteFill>
+      <Head h={s.head} />
+      <div style={{ position: "absolute", left: 130, right: 130, top: rows > 1 ? 270 : 340, display: "grid", gridTemplateColumns: `repeat(${cols}, ${w}px)`, columnGap: 70, rowGap: 50 }}>
+        {s.steps.map((x: any, i: number) => {
+          const d = v(p, 0.06 + (i / n) * 0.82); const k = Math.min(1, pop(f, fps, d)); const on = f >= d;
+          const next = i + 1 < n ? v(p, 0.06 + ((i + 1) / n) * 0.82) : 1e9; const cur = on && f < next;
+          const I = ICONS[x.icon] || CircleCheck;
+          return (
+            <div key={i} style={{ position: "relative", opacity: 0.25 + 0.75 * k, transform: `translateY(${(1 - k) * 30}px)` }}>
+              <Card style={{ padding: "26px 24px", minHeight: rows > 1 ? 230 : 300, border: `3px solid ${cur ? C.brand : on ? `${C.brand}55` : C.line}`, boxShadow: cur ? `0 24px 60px ${C.brand}33` : "none", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 62, height: 62, borderRadius: 18, background: on ? GRAD : C.soft, display: "grid", placeItems: "center", flex: "none" }}><I size={34} color={on ? "#fff" : C.brand} /></div>
+                  <span style={{ fontFamily: BN, fontSize: 30, fontWeight: 800, color: C.brand }}>ধাপ {bn(i + 1)}</span>
+                </div>
+                <div style={{ fontFamily: BN, fontSize: 33, fontWeight: 800, color: C.ink, lineHeight: 1.3 }}><Mixed t={x.t} /></div>
+                {x.s && <div style={{ fontFamily: BN, fontSize: 26, color: C.mute, lineHeight: 1.4 }}><Mixed t={x.s} /></div>}
+                {x.code && <div style={{ marginTop: "auto" }}><Code size={26}>{x.code}</Code></div>}
+              </Card>
+              {i + 1 < n && (i + 1) % cols !== 0 && <div style={{ position: "absolute", right: -58, top: "45%", opacity: on ? 1 : 0.3 }}><ArrowRight size={46} color={C.brand} strokeWidth={2.6} /></div>}
+            </div>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// two things side by side (void vs refund, B2C vs B2B …) with matching rows
+const SVs: React.FC<P> = (p) => {
+  const { s } = p; const n = s.rows.length; const cols = [s.left, s.right];
+  return (
+    <AbsoluteFill>
+      <Head h={s.head} />
+      <div style={{ position: "absolute", left: 130, right: 130, top: 250, display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 30, rowGap: n > 3 ? 14 : 22 }}>
+        {cols.map((c: any, j: number) => (
+          <Rise key={j} d={6 + j * 8}>
+            <div style={{ padding: "20px 28px", borderRadius: 20, background: j ? C.navy : GRAD, color: "#fff", fontFamily: BN, fontSize: 40, fontWeight: 800, display: "flex", alignItems: "center", gap: 14 }}>{c.t}{c.code && <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 28, background: "rgba(255,255,255,.18)", padding: "4px 14px", borderRadius: 10 }}>{c.code}</span>}</div>
+          </Rise>
+        ))}
+        {s.rows.map((r: any, i: number) => [r.l, r.r].map((x: string, j: number) => (
+          <Rise key={i + "-" + j} d={v(p, 0.08 + (i / n) * 0.8 + j * 0.04)} y={20}>
+            <Card style={{ padding: n > 3 ? "14px 24px" : "20px 26px", boxShadow: "none", minHeight: n > 3 ? 80 : 96, display: "flex", alignItems: "center", gap: 16 }}>
+              {r.k && <span style={{ fontFamily: BN, fontSize: 24, fontWeight: 700, color: C.brand, background: C.soft, padding: "4px 12px", borderRadius: 10, flex: "none" }}>{r.k}</span>}
+              <span style={{ fontFamily: BN, fontSize: 31, color: C.ink, lineHeight: 1.35, fontWeight: 600 }}><Mixed t={x} /></span>
+            </Card>
+          </Rise>
+        )))}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const MAP: Record<string, React.FC<any>> = { title: STitle, points: SPoints, term: STerm, anatomy: SAnatomy, gds3: SGds3, note: SNote, myth: SMyth, recap: SRecap, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer />, outro: SOutro, flow: SFlow, vs: SVs };
 export const SCENE_TYPES = Object.keys(MAP);
 
 /* ---------- frame chrome ---------- */
