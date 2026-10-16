@@ -207,14 +207,14 @@ const SExam: React.FC<P> = (p) => {
         </div>
       </Rise>
       <div style={{ position: "absolute", left: 1010, right: 120, top: 260, display: "flex", flexDirection: "column", gap: 18 }}>
-        <Rise d={8} style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        {s.clipFrames ? <Rise d={8} style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div style={{ width: 70, height: 70, borderRadius: 35, background: playing ? C.brand : C.soft, display: "grid", placeItems: "center" }}><Headphones size={36} color={playing ? "#fff" : C.brand} /></div>
           <Wave on={playing} n={22} />
-        </Rise>
+        </Rise> : null}
         {s.lines.map((l: any, i: number) => (
           <Rise key={i} d={s.clipFrames ? c(p, i / s.lines.length) : v(p, 0.05 + i * 0.1)} y={18}>
             <Card style={{ padding: "18px 24px", boxShadow: "none", borderLeft: `6px solid ${l.who === "A" ? C.brand : C.brand2}` }}>
-              <div style={{ fontFamily: EN, fontSize: 18, fontWeight: 800, color: l.who === "A" ? C.brand : C.brand2, letterSpacing: "0.08em" }}>{(l.name || (l.who === "A" ? "RECEPTIONIST" : "CALLER")).toUpperCase()}</div>
+              <div style={{ fontFamily: EN, fontSize: 18, fontWeight: 800, color: l.who === "A" ? C.brand : C.brand2, letterSpacing: "0.08em" }}>{(l.name || (!s.clipFrames ? "Passage" : l.who === "A" ? "RECEPTIONIST" : "CALLER")).toUpperCase()}</div>
               <div style={{ fontFamily: PAPER, fontSize: 32, color: C.ink, lineHeight: 1.4, marginTop: 4 }}><Marked text={l.text} hl={s.hl} strike={s.strike} at={s.clipFrames ? c(p, 0.95) : v(p, 0.3)} /></div>
             </Card>
           </Rise>
