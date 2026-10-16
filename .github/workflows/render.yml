@@ -11,6 +11,8 @@ on:
       id: { description: "lesson id", required: true }
       frames: { description: "total frames", required: true }
       chunks: { description: "parallel chunks", default: "4" }
+      kind: { description: "engine folder: ielts | gds", default: "ielts" }
+      comp: { description: "composition id", default: "IeltsLesson" }
 
 permissions:
   contents: read
@@ -51,7 +53,7 @@ jobs:
           gh release download "in-${{ inputs.id }}" -p "in-${{ inputs.id }}.tar.gz" -D /tmp -R "${{ github.repository }}"
           tar xzf "/tmp/in-${{ inputs.id }}.tar.gz" -C public
       - name: render frames ${{ matrix.a }}-${{ matrix.b }}
-        run: npx remotion render src/ielts/cloud.ts IeltsLesson "out/c${{ matrix.i }}.mp4" --props="public/ielts/${{ inputs.id }}/props.json" --frames=${{ matrix.a }}-${{ matrix.b }} --gl=swangle --concurrency=100% --crf=18 --log=error
+        run: npx remotion render "src/${{ inputs.kind }}/cloud.ts" "${{ inputs.comp }}" "out/c${{ matrix.i }}.mp4" --props="public/${{ inputs.kind }}/${{ inputs.id }}/props.json" --frames=${{ matrix.a }}-${{ matrix.b }} --gl=swangle --concurrency=100% --crf=18 --log=error
       - uses: actions/upload-artifact@v4
         with: { name: "c-${{ inputs.id }}-${{ matrix.i }}", path: "out/c${{ matrix.i }}.mp4", retention-days: 1 }
 
