@@ -128,7 +128,10 @@ const Intro: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
 
 const Word: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
   if (sp.script === "arabic") return <span style={{ fontFamily: NASKH, color: sp.color, direction: "rtl" }}>{sc.word}</span>;
-  const [first, ...rest] = [...sc.word];
+  const word: string = sc.word, at = sc.letter && !word.startsWith(sc.letter) ? word.indexOf(sc.letter) : -1;
+  if (at > 0) // শব্দের ভেতরের বর্ণ (ব্যাঙ-এর ঙ): সেটাই রঙিন
+    return <span style={{ fontFamily: BN }}>{word.slice(0, at)}<span style={{ color: sp.color }}>{sc.letter}</span>{word.slice(at + sc.letter.length)}</span>;
+  const [first, ...rest] = [...word];
   return <span style={{ fontFamily: sp.script === "bangla" ? BN : FRED }}><span style={{ color: sp.color }}>{first}</span>{rest.join("")}</span>;
 };
 
