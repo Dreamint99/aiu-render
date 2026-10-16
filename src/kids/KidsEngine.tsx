@@ -27,7 +27,7 @@ export type Part = { v: string; t: string; card?: boolean };
 export type Scene = { type: string; vo: Part[]; audio: string; audioA?: string; frames: number; voAt: number; voFrames: number; aAt?: number; think?: number; [k: string]: any };
 export type Spec = { id: string; title: string; sub: string; color: string; script: "latin" | "bangla" | "arabic"; scenes: Scene[]; total: number };
 
-const letterFont = (s: Spec["script"]) => (s === "arabic" ? NASKH : s === "bangla" ? BN : FRED);
+const letterFont = (s: Spec["script"]) => `${s === "arabic" ? NASKH : s === "bangla" ? BN : FRED}, ${EMOJI_FONT}`; // ইমোজি অক্ষরও (➡️, ☎️) সব মেশিনে
 
 // নিজের আঁকা ছবি (যেগুলোর ইমোজি নেই)
 const PicSvg: React.FC<{ k: string; size: number }> = ({ k, size }) => {
