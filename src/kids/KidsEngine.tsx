@@ -29,6 +29,21 @@ export type Spec = { id: string; title: string; sub: string; color: string; scri
 
 const letterFont = (s: Spec["script"]) => (s === "arabic" ? NASKH : s === "bangla" ? BN : FRED);
 
+// নিজের আঁকা ছবি (যেগুলোর ইমোজি নেই)
+const PicSvg: React.FC<{ k: string; size: number }> = ({ k, size }) => {
+  if (k === "xylo") {
+    const bars = ["#FF6B6B", "#FF9F1C", "#FFC93C", "#22B573", "#4D7CFE", "#9B5DE5"];
+    return (
+      <svg viewBox="0 0 220 200" width={size} height={size * 0.9}>
+        <path d="M20 70 L200 40 M20 150 L200 170" stroke="#8B5A2B" strokeWidth={12} strokeLinecap="round" />
+        {bars.map((c, i) => { const x = 30 + i * 30, h = 120 - i * 10; return <rect key={i} x={x} y={100 - h / 2 + i * 2} width={24} height={h} rx={8} fill={c} />; })}
+        <g transform="rotate(-30 170 40)"><rect x={160} y={0} width={8} height={70} rx={4} fill="#8B5A2B" /><circle cx={164} cy={0} r={12} fill="#FF6B8B" /></g>
+      </svg>
+    );
+  }
+  return null;
+};
+
 // ── আকাশ, সূর্য, মেঘ, পাহাড় ──
 const Sky: React.FC = () => {
   const f = useCurrentFrame();
@@ -128,20 +143,33 @@ const Letter: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
       {/* অক্ষর-কার্ড */}
       <div style={{ position: "absolute", left: 170, top: 150, width: 640, height: 640, borderRadius: 90, background: sp.color, transform: `scale(${a}) rotate(${(1 - a) * -25 + wob}deg)`, boxShadow: "0 24px 0 rgba(0,0,0,.16)", display: "grid", placeItems: "center", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 22% 20%,rgba(255,255,255,.35) 0 16%,transparent 17%),radial-gradient(circle at 82% 80%,rgba(255,255,255,.2) 0 12%,transparent 13%)" }} />
-        <div style={{ fontFamily: letterFont(sp.script), fontWeight: 700, fontSize: sp.script === "arabic" ? 340 : sp.script === "bangla" ? 380 : 440, color: "#fff", lineHeight: 1, textShadow: "0 12px 0 rgba(0,0,0,.15)", marginTop: sp.script === "arabic" ? -170 : sp.script === "bangla" ? 70 : 0 }}>
-          {sc.letter}{sc.small ? <span style={{ fontSize: 230, opacity: 0.9, marginLeft: 20 }}>{sc.small}</span> : null}
-        </div>
+        {(() => {
+          const st: React.CSSProperties = { fontFamily: letterFont(sp.script), fontWeight: 700, fontSize: sp.script === "arabic" ? 340 : sp.script === "bangla" ? 380 : 440, color: "#fff", lineHeight: 1, textShadow: "0 12px 0 rgba(0,0,0,.15)", marginTop: sp.script === "arabic" ? -170 : sp.script === "bangla" ? 70 : 0, whiteSpace: "nowrap" };
+          const body = <>{sc.letter}{sc.small ? <span style={{ fontSize: 230, opacity: 0.9, marginLeft: 20 }}>{sc.small}</span> : null}</>;
+          if (!sc.draw) return <div style={st}>{body}</div>;
+          // পেনসিল দিয়ে লেখা: হালকা দাগ, তারপর বাঁ থেকে ডানে রং ভরে ওঠে
+          const d0 = sc.voAt + Math.round(sc.voFrames * 0.5), d1 = Math.max(d0 + 30, sc.frames - 16), pr = interpolate(f, [d0, d1], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+          const drawing = f >= d0;
+          return (
+            <div style={{ position: "relative" }}>
+              <div style={{ ...st, opacity: drawing ? 0.28 : 1 }}>{body}</div>
+              {drawing ? <div style={{ ...st, position: "absolute", left: 0, top: 0, color: "#FFE07A", clipPath: `inset(0 ${100 - pr * 100}% 0 0)` }}>{body}</div> : null}
+              {drawing && pr < 1 ? <div style={{ position: "absolute", left: `${pr * 100}%`, top: `${45 + Math.sin(f / 2.2) * 28}%`, fontFamily: EMOJI, fontSize: 110, transform: "translate(-30%,-80%) rotate(-10deg)" }}>✏️</div> : null}
+            </div>
+          );
+        })()}
         {sc.name ? <div style={{ position: "absolute", bottom: 40, background: "#fff", color: sp.color, borderRadius: 99, padding: "6px 40px", fontFamily: BN, fontWeight: 800, fontSize: 64 }}>{sc.name}</div> : null}
       </div>
       {/* ছবি + শব্দ */}
       <div style={{ position: "absolute", left: 930, top: 120, width: 820, height: 560, borderRadius: 70, background: "#fff", boxShadow: "0 18px 0 rgba(42,27,92,.12)", transform: `scale(${p})`, display: "grid", placeItems: "center" }}>
-        <div style={{ fontFamily: EMOJI, fontSize: 290, lineHeight: 1, transform: `translateY(${-40 + Math.sin(f / 8) * 10}px) rotate(${Math.sin(f / 11) * 5}deg)` }}>{sc.pic}</div>
+        <div style={{ fontFamily: EMOJI, fontSize: 290, lineHeight: 1, transform: `translateY(${-40 + Math.sin(f / 8) * 10}px) rotate(${Math.sin(f / 11) * 5}deg)` }}>{String(sc.pic).startsWith("svg:") ? <PicSvg k={String(sc.pic).slice(4)} size={300} /> : sc.pic}</div>
         <div style={{ position: "absolute", bottom: 34, fontSize: sp.script === "arabic" ? 120 : 110, fontWeight: 800, color: INK, opacity: w, transform: `translateY(${(1 - w) * 30}px)`, lineHeight: 1.1 }}><Word sp={sp} sc={sc} /></div>
       </div>
       <div style={{ position: "absolute", left: 930, width: 820, top: 720, display: "flex", justifyContent: "center", gap: 24, transform: `scale(${m})` }}>
         {sc.tr ? <span style={{ background: "#FFF4CC", color: "#8A5A00", borderRadius: 99, padding: "12px 34px", fontFamily: BN, fontWeight: 800, fontSize: 52 }}>{sc.tr}</span> : null}
         <span style={{ background: sp.color, color: "#fff", borderRadius: 99, padding: "12px 38px", fontFamily: BN, fontWeight: 800, fontSize: 52 }}>{sc.tr || sp.script === "latin" ? "মানে " : ""}{sc.meaning}</span>
       </div>
+      {sc.sound ? <div style={{ position: "absolute", left: 170, width: 640, top: 830, display: "flex", justifyContent: "center", opacity: soft(f, fps, 24) }}><span style={{ background: "#FFF4CC", color: "#8A5A00", borderRadius: 99, padding: "10px 34px", fontFamily: BN, fontWeight: 800, fontSize: 50 }}>🔊 বলে: {sc.sound}</span></div> : null}
       {sc.dots ? <div style={{ position: "absolute", left: 170, width: 640, top: 830, textAlign: "center", fontFamily: BN, fontWeight: 800, fontSize: 48, color: INK, opacity: soft(f, fps, 30) }}>● {sc.dots}</div> : null}
       <Tuni size={250} talking={talking} x={1640} y={790} />
     </AbsoluteFill>
@@ -220,7 +248,52 @@ const Outro: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
   );
 };
 
-const VIEW: Record<string, React.FC<{ sp: Spec; sc: Scene }>> = { intro: Intro, letter: Letter, recap: Recap, quiz: Quiz, outro: Outro };
+// ভিডিওর শেষে: এবার নিচে কী করবে (বাচ্চাকে ভিডিওই বলে দেয়)
+const Next: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
+  const f = useCurrentFrame(), { fps } = useVideoConfig();
+  const steps: [string, string][] = sc.steps || [];
+  const per = sc.voFrames / Math.max(1, steps.length + 1);
+  return (
+    <AbsoluteFill>
+      <div style={{ position: "absolute", top: 70, width: "100%", textAlign: "center", fontFamily: BN, fontWeight: 800, fontSize: 92, color: "#fff", textShadow: "0 6px 0 #3A7BD5", transform: `scale(${pop(f, fps, 4)})` }}>ভিডিও শেষ! এবার নিচে চলো</div>
+      <div style={{ position: "absolute", top: 260, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 40 }}>
+        {steps.map(([e, t], i) => {
+          const at = sc.voAt + Math.round(per * (i + 1)), s = pop(f, fps, at), hot = f >= at && f < at + per;
+          return (
+            <div key={i} style={{ width: 360, height: 400, borderRadius: 60, background: hot ? sp.color : "#fff", color: hot ? "#fff" : INK, transform: `scale(${s * (hot ? 1.07 : 1)})`, boxShadow: "0 16px 0 rgba(42,27,92,.14)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18, position: "relative" }}>
+              <div style={{ position: "absolute", top: -34, left: -20, width: 84, height: 84, borderRadius: "50%", background: "#FFC93C", color: INK, display: "grid", placeItems: "center", fontFamily: BN, fontWeight: 800, fontSize: 50 }}>{"১২৩৪"[i]}</div>
+              <div style={{ fontFamily: EMOJI, fontSize: 150, lineHeight: 1 }}>{e}</div>
+              <div style={{ fontFamily: BN, fontWeight: 800, fontSize: 50, textAlign: "center", padding: "0 20px", lineHeight: 1.2 }}>{t}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ position: "absolute", bottom: 40, left: "50%", transform: `translate(-50%, ${Math.abs(Math.sin(f / 6)) * 30}px)`, fontFamily: EMOJI, fontSize: 130 }}>👇</div>
+      <Tuni size={230} talking={f > sc.voAt && f < sc.voAt + sc.voFrames} x={60} y={800} />
+    </AbsoluteFill>
+  );
+};
+
+// ABC গান: সব অক্ষর একে একে জ্বলে ওঠে
+const Song: React.FC<{ sp: Spec; sc: Scene }> = ({ sp, sc }) => {
+  const f = useCurrentFrame(), { fps } = useVideoConfig();
+  const L: string[] = sc.letters, n = L.length, on = Math.floor(interpolate(f, [sc.voAt + 6, sc.voAt + sc.voFrames - 10], [0, n], clamp));
+  const COLS = ["#FF6B6B", "#FF9F1C", "#FFC93C", "#22B573", "#4D7CFE", "#9B5DE5", "#FF6B8B"];
+  return (
+    <AbsoluteFill>
+      <div style={{ position: "absolute", top: 50, width: "100%", textAlign: "center", fontFamily: BN, fontWeight: 800, fontSize: 84, color: "#fff", textShadow: "0 6px 0 #3A7BD5" }}>🎵 ABC গান — সবাই মিলে!</div>
+      <div style={{ position: "absolute", top: 200, left: 140, right: 140, display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 22 }}>
+        {L.map((x, i) => {
+          const lit = i < on, cur = i === on - 1;
+          return <div key={i} style={{ height: 170, borderRadius: 36, background: lit ? COLS[i % COLS.length] : "#fff", color: lit ? "#fff" : "#C9C2E6", display: "grid", placeItems: "center", fontFamily: FRED, fontWeight: 700, fontSize: 120, transform: `scale(${(pop(f, fps, 4 + i) * (cur ? 1.18 : 1))}) translateY(${cur ? -16 : 0}px)`, boxShadow: "0 10px 0 rgba(42,27,92,.14)" }}>{x}</div>;
+        })}
+      </div>
+      <Tuni size={220} talking={f > sc.voAt && f < sc.voAt + sc.voFrames} x={1660} y={820} />
+    </AbsoluteFill>
+  );
+};
+
+const VIEW: Record<string, React.FC<{ sp: Spec; sc: Scene }>> = { intro: Intro, letter: Letter, recap: Recap, quiz: Quiz, next: Next, song: Song, outro: Outro };
 
 export const KidsVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
   const f = useCurrentFrame();
