@@ -283,7 +283,7 @@ const SOutro: React.FC<P> = ({ spec }) => (
     <Pop d={4}><Sign shape="circle-blue" icon="right" size={220} /></Pop>
     <div style={{ marginTop: 36 }}><H d={10} size={60}>পরের পাঠ</H></div>
     <Rise d={18} style={{ marginTop: 18 }}><div style={{ fontFamily: BN, fontSize: 46, fontWeight: 700, color: C.yellow, maxWidth: 1500 }}>{spec.next}</div></Rise>
-    <Rise d={28} style={{ marginTop: 40 }}><div style={{ display: "inline-flex", gap: 14, alignItems: "center", padding: "14px 28px", borderRadius: 40, background: C.card, border: `1px solid ${C.line}`, fontFamily: BN, fontSize: 30, color: C.ink }}><Gamepad2 size={32} color={C.yellow} /> পাঠের নিচের সিমুলেটরে নিজে চালিয়ে অনুশীলন করুন</div></Rise>
+    <Rise d={28} style={{ marginTop: 40 }}><div style={{ display: "inline-flex", gap: 14, alignItems: "center", padding: "14px 28px", borderRadius: 40, background: C.card, border: `1px solid ${C.line}`, fontFamily: BN, fontSize: 30, color: C.ink }}><Gamepad2 size={32} color={C.yellow} /> কোর্সের প্র্যাকটিস পাঠে ৩ডি সিমুলেটরে নিজে চালিয়ে দেখুন</div></Rise>
   </AbsoluteFill>
 );
 
