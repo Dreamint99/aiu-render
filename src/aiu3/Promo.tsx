@@ -361,7 +361,7 @@ function scene(s: S, f: number, v: boolean): React.ReactNode {
           <Beats f={f} s={s} cuts={cuts} render={(k, lf, ll) => (
             <AbsoluteFill>
               <Cam f={lf} len={ll} ry={k ? [12, 6] : [-12, -6]} s={[1, 1.05]}>
-                <div style={{ position: "absolute", left: k ? 80 : 760, top: 200 }}><Laptop w={1080}>{k ? <Rec n="notes" from={6} /> : <Rec n="book-cfe" from={4} />}</Laptop></div>
+                <div style={{ position: "absolute", left: k ? 80 : 760, top: 200 }}><Laptop w={1080}>{k ? <Rec n="notes" from={6} /> : <Rec n="books" from={1.5} />}</Laptop></div>
               </Cam>
               <div style={{ position: "absolute", left: k ? 1250 : 120, top: 360, width: 580 }}>
                 {k ? <Title f={lf} t="নোট আর হাইলাইট" chips={[["হলুদ", "#E8C547"], ["সবুজ", C.green], ["নীল", C.sky]]} /> : <Title f={lf} t="স্পেশাল বই" sub="প্রতিটা পাঠের সাথে মিলিয়ে" />}
