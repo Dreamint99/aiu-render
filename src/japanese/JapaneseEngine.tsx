@@ -501,7 +501,7 @@ const SQuiz: React.FC<P> = ({ s }) => {
         <div style={{ flex: 1, height: 22, borderRadius: 11, background: "rgba(255,255,255,.15)", overflow: "hidden" }}><div style={{ width: `${bar * 100}%`, height: "100%", background: `linear-gradient(90deg, ${C.red}, ${C.sun})` }} /></div>
         <div style={{ fontFamily: BN, fontSize: 60, fontWeight: 900, color: C.sun, width: 70, textAlign: "center" }}>{bn(left)}</div>
       </div>}
-      {reveal && <div style={{ position: "absolute", right: 260, top: 300, opacity: interpolate(f, [hold.b, hold.b + 8, hold.b + 50, hold.b + 70], [0, 1, 1, 0], clamp), transform: `translateY(${-interpolate(f, [hold.b, hold.b + 70], [0, 120], clamp)}px)`, fontFamily: EN, fontSize: 80, fontWeight: 900, color: C.sun, textShadow: `0 0 30px ${C.sun}` }}>+10 XP</div>}
+      {reveal && <div style={{ position: "absolute", right: 120, top: 640, opacity: interpolate(f, [hold.b, hold.b + 8, hold.b + 50, hold.b + 70], [0, 1, 1, 0], clamp), transform: `translateY(${-interpolate(f, [hold.b, hold.b + 70], [0, 120], clamp)}px)`, fontFamily: EN, fontSize: 80, fontWeight: 900, color: C.sun, textShadow: `0 0 30px ${C.sun}` }}>+10 XP</div>}
       <Confetti at={hold.b} y={560} />
       <SFX at={hold.b} name="chime" vol={0.35} />
     </AbsoluteFill>
@@ -663,7 +663,7 @@ const SSecret: React.FC<P> = ({ s }) => {
             {pairs.map(([b, j], i) => (
               <Rise key={i} d={t.a + t.frames * (0.2 + i * 0.18)}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 1fr", alignItems: "center" }}>
-                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "rgba(255,255,255,.1)", fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#fff" }}>🇧🇩 {b}</div>
+                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "rgba(255,255,255,.1)", fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#fff" }}>{b}</div>
                   <div style={{ textAlign: "center", fontFamily: EN, fontSize: 50, fontWeight: 900, color: C.sun }}>=</div>
                   <div style={{ padding: "16px 26px", borderRadius: 20, background: "#fff", fontFamily: MARU, fontSize: 40, color: C.ink }}>{j}</div>
                 </div>
@@ -802,7 +802,6 @@ export const JapaneseVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
   const f = useCurrentFrame();
   const starts = spec.scenes.reduce<number[]>((a, _, i) => [...a, i ? a[i - 1] + spec.scenes[i - 1].len : 10], []);
   const total = jpLen(spec); const sb = subs(spec, starts); const cur = sb.find((x) => f >= x.from && f < x.to + 4);
-  const speech = (fr: number) => spec.scenes.some((s, i) => s.beats.some((b) => (b.t || b.j) && fr >= starts[i] + b.a - 4 && fr < starts[i] + b.b + 4));
   return (
     <AbsoluteFill style={{ background: C.bg0 }}>
       <Studio />
@@ -820,7 +819,7 @@ export const JapaneseVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
       <Header spec={spec} starts={starts} />
       <Badge spec={spec} starts={starts} />
       {cur && <div style={{ position: "absolute", left: 440, right: 140, bottom: 40, display: "flex", justifyContent: "center", opacity: interpolate(f, [cur.from, cur.from + 5, cur.to, cur.to + 4], [0, 1, 1, 0], clamp) }}><div style={{ maxWidth: 1300, padding: "10px 28px 14px", borderRadius: 16, background: "rgba(8,11,36,.84)", border: `1px solid ${C.line}`, fontFamily: BN, fontSize: 36, fontWeight: 500, color: "#fff", textAlign: "center", lineHeight: 1.35 }}>{cur.s.replace(/[।,]$/, "")}</div></div>}
-      <Audio src={staticFile("aiu2/music.mp3")} volume={(fr) => (speech(fr) ? 0.045 : 0.13) * interpolate(fr, [0, 30, total - 60, total], [0, 1, 1, 0], clamp)} />
+      <Audio src={staticFile("aiu2/music.mp3")} volume={(fr) => 0.06 * interpolate(fr, [0, 30, total - 60, total], [0, 1, 1, 0], clamp)} />
     </AbsoluteFill>
   );
 };
