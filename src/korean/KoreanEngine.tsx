@@ -7,7 +7,7 @@
 // Owner's default flow for EVERY lesson (korean_make.py checks it): cinematic hook in a real place (5–15 s) → title/goals →
 // learn (listen → see each block built from jamo) → speak (slow, normal, mic gap) → grammar blocks → fix → context → roleplay (subtitled, then
 // 'your turn') → 3+ challenges (last = boss) → mission → reward (before/after) + next-lesson teaser. Never a talking-head classroom.
-// Scene types: hook · title · learn · speak · grammar · secret · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
+// Scene types: hook · title · recall · learn · speak · grammar · secret · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
 import React from "react";
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender, random } from "remotion";
 import { Check, Mic, Headphones, Sparkles, Zap, Volume2, Trophy, Flame, Star, Sun, Heart, Hand, ArrowRight, Turtle, Gauge, Blocks, HardHat, Gamepad2, Target, X, Wrench, Brain, MapPin, UtensilsCrossed, TrainFront, Store } from "lucide-react";
@@ -100,12 +100,15 @@ const KanaKaraoke: React.FC<{ b: Beat; text: string; size: number; color?: strin
 };
 
 /* ---------- anime characters ---------- */
-type Look = "sensei" | "yui" | "rafi";
+type Look = "sensei" | "yui" | "rafi" | "boss";
 const LOOKS: Record<Look, { skin: string; hair: string; iris: string; top: string; top2: string }> = {
   sensei: { skin: "#E0A77E", hair: "#16121F", iris: "#5B3A29", top: "#23306B", top2: "#FFFFFF" },
   yui: { skin: "#F6D2B8", hair: "#6B3A2A", iris: "#8A4B2E", top: "#2D9CDB", top2: "#FFFFFF" },
   rafi: { skin: "#C98B62", hair: "#120E18", iris: "#3B2618", top: "#1F9D6B", top2: "#0E5E40" },
+  boss: { skin: "#EFC9A8", hair: "#5F6170", iris: "#3B2E2A", top: "#2B2F3A", top2: "#FFFFFF" },
 };
+const DEF_LOOK: Record<string, Look> = { F: "yui", M: "rafi", B: "boss" };
+const lookOf = (spec: Spec, k: string): Look => ((spec.cast[k] as any)?.look as Look) || DEF_LOOK[k] || "yui";
 export const Anime: React.FC<{ look: Look; size: number; a: number; mood?: "calm" | "happy" | "wow"; wave?: boolean; bg?: string }> = ({ look, size, a, mood = "calm", wave, bg }) => {
   const f = useCurrentFrame(); const L = LOOKS[look]; const id = `${look}${size}`;
   const blink = (f + look.length * 31) % 109 < 4 ? 0.1 : 1; const m = Math.min(1, a * 1.3); const bob = Math.sin(f / 18) * 2 + a * 3;
@@ -218,6 +221,27 @@ const Factory: React.FC = () => {
     </AbsoluteFill>
   );
 };
+const Mart: React.FC = () => {
+  const prods = ["#FF5E5B", "#FFC845", "#4CC9F0", "#3DDC97", "#FF8FB1", "#8B5CF6"];
+  return (
+    <AbsoluteFill style={{ background: "linear-gradient(#FFF7E8, #F3E6CF)", overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 120, background: "linear-gradient(90deg, #3DDC97 0 33%, #FFFFFF 33% 36%, #2D9CDB 36% 100%)" }} />
+      <div style={{ position: "absolute", left: 760, top: 26, padding: "8px 30px", borderRadius: 14, background: "#fff", fontFamily: JP, fontWeight: 900, fontSize: 52, color: "#2D9CDB", boxShadow: "0 8px 20px rgba(0,0,0,.15)" }}>편의점</div>
+      {[0, 1, 2].map((r) => <div key={r} style={{ position: "absolute", left: 60, width: 760, top: 200 + r * 170, height: 140 }}>
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 14, background: "#C9B79A" }} />
+        <div style={{ display: "flex", gap: 14, padding: "0 14px", alignItems: "flex-end", height: 126 }}>
+          {Array.from({ length: 11 }, (_, k) => <div key={k} style={{ width: 52, height: 70 + ((k * 37 + r * 13) % 50), borderRadius: 8, background: prods[(k + r) % 6], boxShadow: "inset 0 -10px 0 rgba(0,0,0,.12)" }} />)}
+        </div></div>)}
+      <div style={{ position: "absolute", right: 60, top: 170, width: 640, height: 520, borderRadius: 18, background: "linear-gradient(#DDF3FF, #B9E1F5)", border: "10px solid #9FB6C6", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, padding: 20, boxSizing: "border-box" }}>
+        {Array.from({ length: 12 }, (_, k) => <div key={k} style={{ display: "flex", gap: 10, alignItems: "flex-end", justifyContent: "center" }}>{[0, 1, 2].map((q) => <div key={q} style={{ width: 30, height: 90, borderRadius: "10px 10px 6px 6px", background: k % 3 === 0 ? "rgba(76,201,240,.75)" : k % 3 === 1 ? "#FFC845" : "#3DDC97" }} />)}</div>)}
+      </div>
+      <div style={{ position: "absolute", left: -20, right: -20, bottom: 0, height: 330, background: "linear-gradient(#8A6B4E, #6D533B)", borderTop: "16px solid #B08A62" }} />
+      <div style={{ position: "absolute", right: 300, bottom: 250, width: 220, height: 150, borderRadius: 16, background: "#3A3F58" }}><div style={{ margin: 18, height: 60, borderRadius: 8, background: "#9BE7C4" }} /></div>
+    </AbsoluteFill>
+  );
+};
+const WORLDS: Record<string, React.FC> = { street: () => <Street />, store: () => <Mart />, work: () => <Factory /> };
+
 const Studio: React.FC = () => {
   const f = useCurrentFrame();
   const blob = (x: number, y: number, r: number, c: string, ph: number) => <div style={{ position: "absolute", left: x + Math.sin(f / 90 + ph) * 80, top: y + Math.cos(f / 110 + ph) * 60, width: r, height: r, borderRadius: "50%", background: c, filter: "blur(120px)", opacity: 0.35 }} />;
@@ -232,24 +256,25 @@ const Studio: React.FC = () => {
 };
 
 /* ---------- scenes ---------- */
-const SHook: React.FC<P> = ({ s }) => {
+const SHook: React.FC<P> = ({ s, spec }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig();
   const j = s.beats.find((b) => b.j)!; const t = s.beats.find((b) => b.t)!;
-  const q = "Can you understand Korean?".split(" ");
+  const q = ((s.question as string) || "Can you understand Korean?").split(" "); const W = WORLDS[s.world || "street"] || Street;
+  const who = j.who || "F";
   return (
     <AbsoluteFill>
-      <Street />
+      <W />
       <div style={{ position: "absolute", right: 170, bottom: 120, transform: `translateY(${(1 - ent(f, fps, j.a - 26)) * 300}px)` }}>
-        <Anime look="yui" size={360} a={lineAmp(s, f, "F")} mood={f > j.b ? "happy" : "calm"} wave={f >= j.a && f < j.b + 30} />
+        <Anime look={lookOf(spec, who)} size={360} a={lineAmp(s, f, who)} mood={f > j.b ? "happy" : "calm"} wave={f >= j.a && f < j.b + 30} />
       </div>
       {f >= j.a - 4 && <div style={{ position: "absolute", right: 480, bottom: 380 }}>
-        <Pop d={j.a - 4}><div style={{ padding: "26px 44px", borderRadius: 40, borderBottomRightRadius: 6, background: "#fff", boxShadow: "0 30px 60px rgba(0,0,0,.5)" }}><KanaKaraoke b={j} text={j.j!} size={104} /><div style={{ fontFamily: EN, fontSize: 34, fontWeight: 700, color: "#5B6390", marginTop: 4 }}>{j.ro}</div></div></Pop>
+        <Pop d={j.a - 4}><div style={{ padding: "26px 44px", borderRadius: 40, borderBottomRightRadius: 6, background: "#fff", boxShadow: "0 30px 60px rgba(0,0,0,.5)" }}><KanaKaraoke b={j} text={j.show || j.j!} size={[...(j.show || j.j!)].length > 9 ? 74 : 104} /><div style={{ fontFamily: EN, fontSize: 34, fontWeight: 700, color: "#5B6390", marginTop: 4 }}>{j.ro}</div></div></Pop>
       </div>}
       <div style={{ position: "absolute", left: 70, top: 150, width: 800, padding: "36px 40px 44px", borderRadius: 36, background: "rgba(8,6,28,.72)", boxShadow: "0 30px 80px rgba(0,0,0,.5)", opacity: interpolate(f, [j.b, j.b + 10], [0, 1], clamp) }}>
         <div style={{ fontFamily: EN, fontSize: 88, fontWeight: 900, color: "#fff", lineHeight: 1.08, textShadow: "0 10px 40px rgba(0,0,0,.6)" }}>
-          {q.map((w, i) => { const d = j.b + 8 + i * 5; const k = pop(f, fps, d); return <span key={i} style={{ display: "inline-block", marginRight: 26, opacity: Math.min(1, k * 1.4), transform: `translateY(${(1 - k) * 60}px) rotate(${(1 - k) * -8}deg)`, color: w === "Korean?" ? C.sun : "#fff" }}>{w}</span>; })}
+          {q.map((w, i) => { const d = j.b + 8 + i * 5; const k = pop(f, fps, d); return <span key={i} style={{ display: "inline-block", marginRight: 26, opacity: Math.min(1, k * 1.4), transform: `translateY(${(1 - k) * 60}px) rotate(${(1 - k) * -8}deg)`, color: i === q.length - 1 ? C.sun : "#fff" }}>{w}</span>; })}
         </div>
-        <Rise d={t.a + 10} style={{ marginTop: 22 }}><span style={{ padding: "10px 26px", borderRadius: 30, background: C.red, fontFamily: BN, fontSize: 44, fontWeight: 800, color: "#fff" }}>তুমি কি কোরিয়ান বোঝো?</span></Rise>
+        <Rise d={t.a + 10} style={{ marginTop: 22 }}><span style={{ padding: "10px 26px", borderRadius: 30, background: C.red, fontFamily: BN, fontSize: 44, fontWeight: 800, color: "#fff" }}>{s.questionBn || "তুমি কি কোরিয়ান বোঝো?"}</span></Rise>
       </div>
       <SFX at={j.a - 4} name="pop" vol={0.3} /><SFX at={j.b + 8} name="whoosh" vol={0.25} />
     </AbsoluteFill>
@@ -429,7 +454,9 @@ const SRole: React.FC<P> = ({ s, spec }) => {
   const intro = s.beats[0]; const scene = f >= intro.b - 10;
   const cur = s.beats.filter((b) => (b.j || b.gap) && f >= b.a - 6).pop();
   const k = ent(f, fps, intro.b - 10, 30);
-  const helmet = s.beats.find((b) => b.j?.includes("안전모")); const boxLine = s.beats.find((b) => b.j?.startsWith("박스"));
+  const world = s.world || "work"; const W = WORLDS[world] || Factory; const fac = world === "work";
+  const partner = s.beats.find((b) => b.j && b.who !== "M")?.who || "F";
+  const helmet = fac ? s.beats.find((b) => b.j?.includes("안전모")) : undefined; const boxLine = fac ? s.beats.find((b) => b.j?.startsWith("박스")) : undefined;
   const bubble = (b: Beat) => {
     const L = b.who === "M"; const hide = pass2 && !L;
     return (
@@ -443,9 +470,9 @@ const SRole: React.FC<P> = ({ s, spec }) => {
   };
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: k, transform: `scale(${1.1 - 0.1 * k})` }}><Factory /></AbsoluteFill>
+      <AbsoluteFill style={{ opacity: k, transform: `scale(${1.1 - 0.1 * k})` }}><W /></AbsoluteFill>
       {!scene && <AbsoluteFill style={{ background: "rgba(8,11,36,.55)" }} />}
-      <Kicker text={pass2 ? "তোমার পালা — তুমি রাফি!" : "রোলপ্লে · কারখানায় প্রথম দিন"} color={pass2 ? C.red : C.mint} icon={HardHat} />
+      <Kicker text={pass2 ? "তোমার পালা — তুমি রাফি!" : `রোলপ্লে · ${s.place || (fac ? "কারখানায় প্রথম দিন" : world === "store" ? "কনভিনিয়েন্স স্টোর" : "রাস্তায়")}`} color={pass2 ? C.red : C.mint} icon={HardHat} />
       {scene && <>
         <div style={{ position: "absolute", left: 90, bottom: 210, textAlign: "center", transform: `translateY(${(1 - k) * 200}px)` }}>
           <div style={{ position: "relative" }}>
@@ -455,8 +482,8 @@ const SRole: React.FC<P> = ({ s, spec }) => {
           <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{pass2 ? "তুমি (রাফি)" : spec.cast.M.bn}</div>
         </div>
         <div style={{ position: "absolute", right: 90, bottom: 210, textAlign: "center", transform: `translateY(${(1 - k) * 200}px)` }}>
-          <Anime look="yui" size={300} a={lineAmp(s, f, "F")} mood={f > (s.beats[s.beats.length - 1].b - 40) ? "happy" : "calm"} />
-          <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{spec.cast.F.bn} · সুপারভাইজার</div>
+          <Anime look={lookOf(spec, partner)} size={300} a={lineAmp(s, f, partner)} mood={f > (s.beats[s.beats.length - 1].b - 40) ? "happy" : "calm"} />
+          <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{spec.cast[partner]?.bn}{(spec.cast[partner] as any)?.role ? ` · ${(spec.cast[partner] as any).role}` : ""}</div>
         </div>
         {boxLine && f >= boxLine.a && f < boxLine.b + 50 && <Pop d={boxLine.a + 4} style={{ position: "absolute", left: 780, bottom: 300 }} rot={-4}><div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div style={{ width: 120, height: 92, borderRadius: 8, background: "#C9A26B", boxShadow: "inset 0 -12px 0 rgba(0,0,0,.15), 0 14px 30px rgba(0,0,0,.3)" }}><div style={{ margin: "0 auto", width: 24, height: 92, background: "#E8D2A6" }} /></div>
@@ -708,7 +735,35 @@ const SSecret: React.FC<P> = ({ s }) => {
 };
 
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, secret: SSecret, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
+// spaced recall from earlier lessons: prompt → the learner says it during the hold → the native answer
+const SRecall: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame();
+  const items = s.items as { q: string }[];
+  return (
+    <AbsoluteFill>
+      <Kicker text="মনে আছে? আগের ক্লাস" color={C.violet} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 220, right: 220, top: 240, display: "flex", flexDirection: "column", gap: 26 }}>
+        {items.map((it, i) => {
+          const h = byKey(s, `h${i}`)!, j = byKey(s, `j${i}`)!; if (f < h.a - 10) return null;
+          const yours = f >= h.a && f < h.b; const shown = f >= j.a;
+          return (
+            <Rise key={i} d={h.a - 10}>
+              <div style={{ display: "flex", alignItems: "center", gap: 30, padding: "24px 34px", borderRadius: 28, background: shown ? "#fff" : "rgba(255,255,255,.08)", border: `3px solid ${shown ? C.mint : yours ? C.red : C.line}` }}>
+                <div style={{ flex: 1, fontFamily: BN, fontSize: 40, fontWeight: 700, color: shown ? C.ink : "#fff" }}>{mix(it.q)}</div>
+                <div style={{ minWidth: 460, textAlign: "right" }}>
+                  {shown ? <><KanaKaraoke b={j} text={j.show || j.j!} size={58} /><div style={{ fontFamily: EN, fontSize: 28, fontWeight: 700, color: "#0E9F6E" }}>{j.ro}</div></>
+                    : yours ? <span style={{ fontFamily: BN, fontSize: 40, fontWeight: 800, color: C.red }}>🎤 মনে করে বলো! {bn(Math.ceil((h.b - f) / 30))}</span> : null}
+                </div>
+              </div>
+            </Rise>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, secret: SSecret, recall: SRecall, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
@@ -781,3 +836,7 @@ export const KoreanVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
     </AbsoluteFill>
   );
 };
+
+// re-exported for the course promo (src/koreanpromo/KoreanPromo.tsx); behaviour unchanged
+export { WORLDS, Studio, KanaKaraoke, Confetti, mix };
+export type { Look };
