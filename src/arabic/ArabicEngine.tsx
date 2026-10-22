@@ -671,7 +671,36 @@ const SMission: React.FC<P> = ({ s }) => {
   );
 };
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
+// signature secret: a true life hack / Bangla bridge / insider tip — a golden "key" card, Bangla side vs Arabic side
+const SSecret: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const t = s.beats[0]; const k = pop(f, fps, 6);
+  const pairs = (s.pairs || []) as [string, string][];
+  return (
+    <AbsoluteFill>
+      <Kicker text={s.kind || "সিক্রেট হ্যাক"} color={C.sun} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: 200, display: "flex", justifyContent: "center" }}>
+        <div style={{ width: 1400, borderRadius: 40, padding: "34px 56px", background: "linear-gradient(135deg, #3A2A05, #6B4A0A)", border: `4px solid ${C.sun}`, boxShadow: `0 0 ${60 + Math.sin(f / 8) * 20}px ${C.sun}66, 0 40px 80px rgba(0,0,0,.5)`, transform: `scale(${0.85 + 0.15 * k})`, opacity: Math.min(1, k * 1.4) }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}><span style={{ fontSize: 76 }}>🔑</span><div style={{ fontFamily: BN, fontSize: 56, fontWeight: 800, color: C.sun, lineHeight: 1.2 }}>{s.head}</div></div>
+          {pairs.length > 0 && <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+            {pairs.map(([b, j], i) => (
+              <Rise key={i} d={t.a + t.frames * (0.12 + i * 0.14)}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 1fr", alignItems: "center" }}>
+                  <div style={{ padding: "10px 26px", borderRadius: 20, background: "rgba(255,255,255,.1)", fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#fff" }}>{b}</div>
+                  <div style={{ textAlign: "center", fontFamily: EN, fontSize: 50, fontWeight: 900, color: C.sun }}>≈</div>
+                  <div dir="rtl" style={{ padding: "0 26px", borderRadius: 20, background: "#fff", fontFamily: AR, fontSize: 46, fontWeight: 700, color: C.ink, lineHeight: 1.55, textAlign: "right" }}>{j}</div>
+                </div>
+              </Rise>
+            ))}
+          </div>}
+          {s.why && <Rise d={t.a + t.frames * 0.72} style={{ marginTop: 22 }}><div style={{ fontFamily: BN, fontSize: 32, color: "#FFE9B0", lineHeight: 1.4 }}>💡 {s.why}</div></Rise>}
+        </div>
+      </div>
+      <SFX at={6} name="chime" vol={0.3} />
+    </AbsoluteFill>
+  );
+};
+
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, fix: SFix, context: SContext, secret: SSecret, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
