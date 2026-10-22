@@ -6,8 +6,8 @@ import React from "react";
 import { AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender, random } from "remotion";
 import { Search, GraduationCap, User, ShieldCheck, Cpu, KeyRound, Languages, Briefcase, Megaphone, Gamepad2, Clapperboard, ClipboardCheck, Wallet, Crown, Gavel, Globe, Mic, FileText, Check, Sparkles, Play, Film } from "lucide-react";
 
-const C = { bg0: "#030617", bg1: "#0A1240", blue: "#2F6BFF", brand: "#0050ED", cyan: "#3EE6FF", gold: "#FFC845", pink: "#FF4FB4", mint: "#3DDC97", red: "#FF4D5E", white: "#FFFFFF", mute: "#9AA6E0", ink: "#081030" };
-const BN = "Anek", EN = "Montserrat", MARU = "Maru";
+export const C = { bg0: "#030617", bg1: "#0A1240", blue: "#2F6BFF", brand: "#0050ED", cyan: "#3EE6FF", gold: "#FFC845", pink: "#FF4FB4", mint: "#3DDC97", red: "#FF4D5E", white: "#FFFFFF", mute: "#9AA6E0", ink: "#081030" };
+export const BN = "Anek", EN = "Montserrat", MARU = "Maru";
 if (typeof document !== "undefined") {
   for (const [n, u] of [["Anek", "fonts/AnekBangla.ttf"], ["Montserrat", "fonts/Montserrat.ttf"], ["Maru", "fonts/MPLUSRounded1c-ExtraBold.ttf"]]) {
     const h = delayRender(`font ${n}`);
@@ -15,18 +15,18 @@ if (typeof document !== "undefined") {
     f.load().then(() => { document.fonts.add(f); continueRender(h); }).catch(() => continueRender(h));
   }
 }
-const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const ease = Easing.bezier(0.16, 1, 0.3, 1);
-const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[+d]);
-const sp = (f: number, fps: number, d: number, damping = 14) => spring({ frame: f - d, fps, config: { damping, mass: 0.7 } });
-const P = (id: string) => staticFile(`boardpromo/board-reel/${id}`);
+export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+export const ease = Easing.bezier(0.16, 1, 0.3, 1);
+export const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[+d]);
+export const sp = (f: number, fps: number, d: number, damping = 14) => spring({ frame: f - d, fps, config: { damping, mass: 0.7 } });
+export const P = (id: string) => staticFile(`boardpromo/board-reel/${id}`);
 
 export type Scene = { id: string; vo: string; file: string; frames: number; len: number };
 export type Spec = { id: string; scenes: Scene[]; total: number };
 export const promoLen = (s: Spec) => s.total || 1500;
 type SP = { s: Scene };
 
-const MEMBERS: { n: string; I: React.FC<any>; c: string }[] = [
+export const MEMBERS: { n: string; I: React.FC<any>; c: string }[] = [
   { n: "গবেষক", I: Search, c: C.cyan }, { n: "সেরা শিক্ষক", I: GraduationCap, c: C.gold }, { n: "নতুন ছাত্র", I: User, c: C.mint },
   { n: "মান যাচাইকারী", I: ShieldCheck, c: C.blue }, { n: "নেটিভ স্পিকার", I: Languages, c: C.pink }, { n: "সিক্রেট গবেষক", I: KeyRound, c: C.gold },
   { n: "ক্যারিয়ার কোচ", I: Briefcase, c: C.cyan }, { n: "মার্কেটিং", I: Megaphone, c: C.red }, { n: "গেম ডিজাইনার", I: Gamepad2, c: C.mint },
@@ -35,7 +35,7 @@ const MEMBERS: { n: string; I: React.FC<any>; c: string }[] = [
 ];
 
 /* ---------- primitives ---------- */
-const Badge: React.FC<{ i: number; size: number; glow?: number; label?: boolean }> = ({ i, size, glow = 0, label = true }) => {
+export const Badge: React.FC<{ i: number; size: number; glow?: number; label?: boolean }> = ({ i, size, glow = 0, label = true }) => {
   const m = MEMBERS[i]; const f = useCurrentFrame();
   return (
     <div style={{ width: size, display: "flex", flexDirection: "column", alignItems: "center", gap: size * 0.08 }}>
@@ -50,7 +50,7 @@ const Badge: React.FC<{ i: number; size: number; glow?: number; label?: boolean 
     </div>
   );
 };
-const Particles: React.FC<{ n?: number }> = ({ n = 70 }) => {
+export const Particles: React.FC<{ n?: number }> = ({ n = 70 }) => {
   const f = useCurrentFrame();
   return <>{Array.from({ length: n }, (_, i) => {
     const x = random(`x${i}`) * 1080, sp2 = 0.4 + random(`s${i}`) * 1.6, y = (random(`y${i}`) * 2100 - f * sp2 * 2.2) % 2100;
@@ -58,7 +58,7 @@ const Particles: React.FC<{ n?: number }> = ({ n = 70 }) => {
     return <div key={i} style={{ position: "absolute", left: x, top: (y + 2100) % 2100 - 100, width: r, height: r, borderRadius: "50%", background: i % 3 ? C.cyan : C.gold, opacity: 0.25 + random(`o${i}`) * 0.5, boxShadow: `0 0 ${r * 3}px ${i % 3 ? C.cyan : C.gold}` }} />;
   })}</>;
 };
-const Grid: React.FC<{ speed?: number }> = ({ speed = 1 }) => {
+export const Grid: React.FC<{ speed?: number }> = ({ speed = 1 }) => {
   const f = useCurrentFrame();
   return (
     <div style={{ position: "absolute", left: -600, right: -600, bottom: -200, height: 900, transform: "perspective(700px) rotateX(64deg)", transformOrigin: "50% 100%",
@@ -66,7 +66,7 @@ const Grid: React.FC<{ speed?: number }> = ({ speed = 1 }) => {
       backgroundPosition: `0 ${(f * 4 * speed) % 90}px`, maskImage: "linear-gradient(transparent, #000 40%)", WebkitMaskImage: "linear-gradient(transparent, #000 40%)" }} />
   );
 };
-const Backdrop: React.FC = () => {
+export const Backdrop: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{ background: `radial-gradient(1200px 1400px at 50% 40%, ${C.bg1}, ${C.bg0})`, overflow: "hidden" }}>
@@ -77,7 +77,7 @@ const Backdrop: React.FC = () => {
   );
 };
 // light streak + flash between scenes
-const Transition: React.FC = () => {
+export const Transition: React.FC = () => {
   const f = useCurrentFrame(); if (f > 14) return null;
   const x = interpolate(f, [0, 14], [-1400, 1600], { ...clamp, easing: Easing.inOut(Easing.cubic) });
   return <AbsoluteFill style={{ pointerEvents: "none" }}>
@@ -85,18 +85,18 @@ const Transition: React.FC = () => {
     <AbsoluteFill style={{ background: "#fff", opacity: interpolate(f, [0, 3, 9], [0.45, 0.2, 0], clamp) }} />
   </AbsoluteFill>;
 };
-const Wide: React.FC<{ src: string; w: number }> = ({ src, w }) => (
+export const Wide: React.FC<{ src: string; w: number }> = ({ src, w }) => (
   <div style={{ width: w, borderRadius: 26, overflow: "hidden", boxShadow: `0 30px 80px rgba(0,0,0,.6), 0 0 0 3px ${C.cyan}88, 0 0 50px ${C.blue}66` }}>
     <OffthreadVideo src={P(`clips/${src}.mp4`)} muted style={{ width: "100%", display: "block" }} />
   </div>
 );
-const Title: React.FC<{ text: string; at: number; size?: number; color?: string; top: number }> = ({ text, at, size = 92, color = "#fff", top }) => {
+export const Title: React.FC<{ text: string; at: number; size?: number; color?: string; top: number }> = ({ text, at, size = 92, color = "#fff", top }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig(); const words = text.split(" ");
   return <div style={{ position: "absolute", left: 60, right: 60, top, textAlign: "center", fontFamily: BN, fontWeight: 800, fontSize: size, lineHeight: 1.18, color, textShadow: "0 8px 30px rgba(0,0,0,.6)" }}>
     {words.map((w, i) => { const k = sp(f, fps, at + i * 3, 12); return <span key={i} style={{ display: "inline-block", marginRight: size * 0.25, opacity: Math.min(1, k * 1.5), transform: `translateY(${(1 - k) * 60}px) scale(${0.7 + 0.3 * k})` }}>{w}</span>; })}
   </div>;
 };
-const Chip: React.FC<{ children: React.ReactNode; c: string; style?: React.CSSProperties }> = ({ children, c, style }) => (
+export const Chip: React.FC<{ children: React.ReactNode; c: string; style?: React.CSSProperties }> = ({ children, c, style }) => (
   <span style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "10px 24px", borderRadius: 40, background: `${c}22`, border: `2px solid ${c}`, fontFamily: BN, fontSize: 36, fontWeight: 700, color: "#fff", ...style }}>{children}</span>
 );
 
@@ -143,7 +143,7 @@ const SBoard: React.FC<SP> = ({ s }) => {
   );
 };
 
-const SOURCES = ["JLPT অফিসিয়াল গাইড", "Japan Foundation · JFT-Basic", "জাপানের SSW ভিসা তথ্য", "বাংলাদেশি শিক্ষার্থীদের সাধারণ ভুল", "নেটিভ স্পিকারদের বাস্তব কথা"];
+export const SOURCES = ["JLPT অফিসিয়াল গাইড", "Japan Foundation · JFT-Basic", "জাপানের SSW ভিসা তথ্য", "বাংলাদেশি শিক্ষার্থীদের সাধারণ ভুল", "নেটিভ স্পিকারদের বাস্তব কথা"];
 const SResearch: React.FC<SP> = ({ s }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig();
   return (
@@ -204,7 +204,7 @@ const SDecide: React.FC<SP> = ({ s }) => {
   );
 };
 
-const STEPS = [{ t: "স্ক্রিপ্ট", I: FileText, c: C.cyan }, { t: "নেটিভ কণ্ঠ", I: Mic, c: C.pink }, { t: "অ্যানিমেশন", I: Film, c: C.gold }, { t: "রেন্ডার", I: Play, c: C.mint }];
+export const STEPS = [{ t: "স্ক্রিপ্ট", I: FileText, c: C.cyan }, { t: "নেটিভ কণ্ঠ", I: Mic, c: C.pink }, { t: "অ্যানিমেশন", I: Film, c: C.gold }, { t: "রেন্ডার", I: Play, c: C.mint }];
 const SBuild: React.FC<SP> = ({ s }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig(); const L = s.frames;
   const active = Math.min(3, Math.floor(interpolate(f, [6, L * 0.75], [0, 3.99], clamp)));
@@ -226,7 +226,7 @@ const SBuild: React.FC<SP> = ({ s }) => {
   );
 };
 
-const CHECKS = ["সিনেমাটিক হুক", "হাতে-কলমে অনুশীলন", "বাস্তব রোলপ্লে", "বস চ্যালেঞ্জ", "বাংলার সাথে সিক্রেট", "নির্ভুল উচ্চারণ ও তথ্য", "অডিও-ভিডিও সিঙ্ক"];
+export const CHECKS = ["সিনেমাটিক হুক", "হাতে-কলমে অনুশীলন", "বাস্তব রোলপ্লে", "বস চ্যালেঞ্জ", "বাংলার সাথে সিক্রেট", "নির্ভুল উচ্চারণ ও তথ্য", "অডিও-ভিডিও সিঙ্ক"];
 const SGate: React.FC<SP> = ({ s }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig(); const L = s.frames; const pass = Math.round(L * 0.82); const k = sp(f, fps, pass, 9);
   return (
@@ -243,7 +243,7 @@ const SGate: React.FC<SP> = ({ s }) => {
   );
 };
 
-const WORDS = [{ t: "শোনো", c: C.cyan, clip: "street" }, { t: "বলো", c: C.pink, clip: "speak" }, { t: "খেলো", c: C.gold, clip: "quiz" }, { t: "শেখো", c: C.mint, clip: "store" }];
+export const WORDS = [{ t: "শোনো", c: C.cyan, clip: "street" }, { t: "বলো", c: C.pink, clip: "speak" }, { t: "খেলো", c: C.gold, clip: "quiz" }, { t: "শেখো", c: C.mint, clip: "store" }];
 const SResult: React.FC<SP> = ({ s }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig(); const L = s.len; const seg = (L - 10) / 4; const i = Math.min(3, Math.floor(f / seg)); const w = WORDS[i]; const lf = f - i * seg;
   const k = sp(lf, fps, 0, 10);
@@ -282,7 +282,7 @@ const SCta: React.FC<SP> = ({ s }) => {
 const MAP: Record<string, React.FC<SP>> = { hook: SHook, board: SBoard, research: SResearch, debate: SDebate, decide: SDecide, build: SBuild, gate: SGate, result: SResult, cta: SCta };
 
 // big sound-off captions, word by word with the voice
-const Caption: React.FC<{ text: string; frames: number }> = ({ text, frames }) => {
+export const Caption: React.FC<{ text: string; frames: number }> = ({ text, frames }) => {
   const f = useCurrentFrame(); const words = text.split(" "); const tot = text.length; let acc = 0;
   const p = interpolate(f, [0, frames], [0, 1], clamp);
   const chunk = Math.min(words.length - 1, Math.floor(p * Math.ceil(words.length / 5)) * 5);
