@@ -3,10 +3,11 @@
 // (mic gaps), makes mistakes, retries — and is never bored. Ideas taken from EnglishEngine (karaoke, mic countdown, quiz, confetti).
 // One spec per lesson: src/japanese/specs/<id>.json, voiced and timed by scripts/japanese_make.py (every beat has a/b frames;
 // Japanese lines carry per-character start frames `cs` from ElevenLabs /with-timestamps, so each kana lights up when it is spoken).
-// Scene types: hook · title · learn · speak · grammar · roleplay · quiz · reward
+// Scene types: hook · title · learn · speak · grammar · fix · context · roleplay · quiz (last = boss) · mission · reward
+// Global Class Rules: video-studio/CLASS_RULES.md, checked by scripts/lesson_check.py before rendering.
 import React from "react";
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender, random } from "remotion";
-import { Check, Mic, Headphones, Sparkles, Zap, Volume2, Trophy, Flame, Star, Sun, Heart, Hand, ArrowRight, Turtle, Gauge, Blocks, ShoppingBasket, Gamepad2 } from "lucide-react";
+import { Check, Mic, Headphones, Sparkles, Zap, Volume2, Trophy, Flame, Star, Sun, Heart, Hand, ArrowRight, Turtle, Gauge, Blocks, ShoppingBasket, Gamepad2, X, TrainFront, UtensilsCrossed, Home, Target, Smartphone, Crown } from "lucide-react";
 
 /* ---------- design tokens ---------- */
 const C = {
@@ -445,21 +446,21 @@ const SQuiz: React.FC<P> = ({ s }) => {
   const opts = s.o as [string, string][];
   return (
     <AbsoluteFill>
-      <Kicker text={`চ্যালেঞ্জ ${bn(s.n)} / ৩`} color={C.sun} icon={Gamepad2} />
+      <Kicker text={s.boss ? "বস চ্যালেঞ্জ!" : `চ্যালেঞ্জ ${bn(s.n)} / ৩`} color={s.boss ? C.red : C.sun} icon={s.boss ? Crown : Gamepad2} />
       <Rise d={6} style={{ position: "absolute", left: 160, right: 160, top: 215, textAlign: "center" }}><div style={{ fontFamily: BN, fontSize: 62, fontWeight: 800, color: "#fff" }}>{s.q}</div></Rise>
       {listen && <div style={{ position: "absolute", left: 0, right: 0, top: 320, display: "flex", justifyContent: "center", alignItems: "center", gap: 26 }}>
         <div style={{ width: 120, height: 120, borderRadius: 60, background: C.sky, display: "grid", placeItems: "center", transform: `scale(${f >= listen.a && f < listen.b ? 1.12 + Math.sin(f / 3) * 0.05 : 1})`, boxShadow: f >= listen.a && f < listen.b ? `0 0 60px ${C.sky}` : "none" }}><Volume2 size={64} color={C.ink} /></div>
         <Wave b={listen} w={520} h={80} color={C.sky} bars={30} />
         {reveal && <span style={{ fontFamily: MARU, fontSize: 64, color: "#fff" }}>{listen.j}</span>}
       </div>}
-      <div style={{ position: "absolute", left: 320, right: 320, top: listen ? 480 : 380, display: "flex", flexDirection: "column", gap: 22 }}>
+      <div style={{ position: "absolute", left: 320, right: 320, top: listen ? 480 : s.boss ? 450 : 380, display: "flex", flexDirection: "column", gap: 22 }}>
         {opts.map(([main, sub], i) => {
           const right = reveal && i === s.a; const k = pop(f, fps, hold.b + 2); const jp = /[぀-ヿ]/.test(main);
           return (
             <Rise key={i} d={s.beats[0].a + 10 + i * 6} y={30}>
               <div style={{ display: "flex", alignItems: "center", gap: 26, padding: "18px 30px", borderRadius: 26, background: right ? C.mint : "#fff", opacity: reveal && !right ? 0.35 : 1, transform: right ? `scale(${1 + 0.05 * k})` : "none", boxShadow: right ? `0 0 60px ${C.mint}` : "0 16px 36px rgba(0,0,0,.35)" }}>
                 <div style={{ width: 66, height: 66, borderRadius: 33, background: right ? "#fff" : [C.sky, C.sun, C.sakura][i], display: "grid", placeItems: "center", fontFamily: EN, fontWeight: 900, fontSize: 34, color: C.ink, flex: "none" }}>{right ? <Check size={38} color="#0E9F6E" strokeWidth={4} /> : "ABC"[i]}</div>
-                <span style={{ fontFamily: jp ? MARU : BN, fontSize: jp ? 54 : 48, fontWeight: 800, color: C.ink }}>{main}</span>
+                <span style={{ fontFamily: jp ? MARU : BN, fontSize: jp ? (main.length > 12 ? 46 : 54) : 48, fontWeight: 800, color: C.ink }}>{main}</span>
                 {sub && <span style={{ fontFamily: EN, fontSize: 30, fontWeight: 700, color: "#5B6390" }}>{sub}</span>}
               </div>
             </Rise>
@@ -477,13 +478,112 @@ const SQuiz: React.FC<P> = ({ s }) => {
   );
 };
 
+// mistake recovery: a wrong version → the learner thinks (hold) → stamp + the right one with why
+const SFix: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig();
+  const rows = s.rows as { wrong: string; wro: string; right: string; rro: string; why: string }[];
+  return (
+    <AbsoluteFill>
+      <Kicker text="ভুল ধরো, শুধরে নাও" color={C.red} icon={X} />
+      <div style={{ position: "absolute", left: 140, right: 140, top: 240, display: "flex", flexDirection: "column", gap: 40 }}>
+        {rows.map((r, i) => {
+          const q = byKey(s, `q${i}`)!, h = byKey(s, `h${i}`)!, x = byKey(s, `x${i}`)!;
+          if (f < q.a - 6) return null;
+          const st = pop(f, fps, h.b); const ok = f >= x.a; const thinking = f >= h.a && f < h.b;
+          return (
+            <Rise key={i} d={q.a - 6}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30 }}>
+                <div style={{ position: "relative", padding: "28px 36px", borderRadius: 28, background: "rgba(230,57,70,.12)", border: `3px solid ${C.red}88` }}>
+                  <div style={{ fontFamily: MARU, fontSize: 70, color: "#fff" }}>{r.wrong}</div>
+                  <div style={{ fontFamily: EN, fontSize: 34, fontWeight: 800, color: C.sakura }}>{r.wro}</div>
+                  {thinking && <div style={{ position: "absolute", right: 30, top: 30, fontFamily: BN, fontSize: 34, fontWeight: 800, color: C.sun }}>🤔 ভাবো… {bn(Math.ceil((h.b - f) / 30))}</div>}
+                  <div style={{ position: "absolute", right: 26, top: "50%", marginTop: -52, width: 104, height: 104, borderRadius: 52, border: `7px solid ${C.red}`, display: "grid", placeItems: "center", color: C.red, fontFamily: BN, fontWeight: 900, fontSize: 34, opacity: f >= h.b ? Math.min(1, st * 2) : 0, transform: `scale(${2.4 - 1.4 * st}) rotate(-14deg)` }}>ভুল</div>
+                </div>
+                <div style={{ padding: "28px 36px", borderRadius: 28, background: ok ? "#fff" : "rgba(255,255,255,.06)", border: `3px solid ${ok ? C.mint : C.line}` }}>
+                  {ok ? <><div style={{ fontFamily: MARU, fontSize: 70, color: C.ink }}>{r.right}</div><div style={{ fontFamily: EN, fontSize: 34, fontWeight: 800, color: "#0E9F6E" }}>{r.rro}</div>
+                    <Rise d={x.a + 12}><div style={{ marginTop: 10, fontFamily: BN, fontSize: 32, fontWeight: 600, color: "#4A5280", lineHeight: 1.35 }}><Check size={30} color="#0E9F6E" strokeWidth={3} style={{ verticalAlign: -5 }} /> {r.why}</div></Rise></>
+                    : <div style={{ fontFamily: BN, fontSize: 40, color: C.mute, paddingTop: 30 }}>ঠিকটা কী হবে…?</div>}
+                </div>
+              </div>
+              <SFX at={h.b} name="hit" vol={0.3} /><SFX at={x.a} name="chime" vol={0.2} />
+            </Rise>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// context switching: the same phrase in other real places — the learner says it first (hold), then hears it
+const PLACE: Record<string, React.FC<any>> = { train: TrainFront, food: UtensilsCrossed, home: Home };
+const SContext: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame();
+  const cards = s.cards as { place: string; icon: string; use: string }[];
+  return (
+    <AbsoluteFill>
+      <Kicker text="এক শব্দ, অনেক জায়গা" color={C.mint} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 120, right: 120, top: 260, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 36 }}>
+        {cards.map((c, i) => {
+          const h = byKey(s, `h${i}`)!, j = byKey(s, `j${i}`)!; const I = PLACE[c.icon] || Home;
+          const active = f >= h.a - 6 && f < j.b + 10; const shown = f >= j.a; const yours = f >= h.a && f < h.b;
+          return (
+            <Pop key={i} d={s.beats[0].a + 10 + i * 8} rot={[-2, 1.5, -1][i]}>
+              <div style={{ borderRadius: 32, overflow: "hidden", background: "#fff", boxShadow: active ? `0 0 0 8px ${ACC[i]}, 0 30px 60px rgba(0,0,0,.5)` : "0 24px 50px rgba(0,0,0,.4)", transform: active ? "scale(1.04)" : "none" }}>
+                <div style={{ height: 230, background: `linear-gradient(135deg, ${ACC[i]}, ${ACC[(i + 2) % 6]})`, display: "grid", placeItems: "center" }}><I size={120} color="#fff" strokeWidth={1.6} /></div>
+                <div style={{ padding: "22px 28px 28px", textAlign: "center" }}>
+                  <div style={{ fontFamily: BN, fontSize: 40, fontWeight: 800, color: C.ink }}>{c.place}</div>
+                  <div style={{ fontFamily: BN, fontSize: 28, color: "#5B6390" }}>{c.use}</div>
+                  <div style={{ marginTop: 18, height: 100, display: "grid", placeItems: "center" }}>
+                    {shown ? <KanaKaraoke b={j} text={j.j!} size={64} /> : yours ? <span style={{ fontFamily: BN, fontSize: 36, fontWeight: 800, color: C.red }}>🎤 তুমি বলো! {bn(Math.ceil((h.b - f) / 30))}</span> : <span style={{ fontFamily: MARU, fontSize: 64, color: "#D5D9EE" }}>？</span>}
+                  </div>
+                </div>
+              </div>
+            </Pop>
+          );
+        })}
+      </div>
+      {cards.map((_, i) => <SFX key={i} at={byKey(s, `j${i}`)!.a - 4} name="pop" vol={0.2} />)}
+    </AbsoluteFill>
+  );
+};
+
+// real-life mission with a tangible output (the learner records themselves after the video)
+const SMission: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const t = s.beats[0]; const xp = pop(f, fps, t.a + t.frames * 0.8);
+  return (
+    <AbsoluteFill>
+      <Kicker text="আজকের মিশন" color={C.mint} icon={Target} />
+      <Pop d={8} style={{ position: "absolute", left: 260, right: 260, top: 220 }}>
+        <div style={{ borderRadius: 40, padding: "44px 56px", background: `linear-gradient(135deg, ${C.violet}, #3B2A9E)`, boxShadow: "0 40px 80px rgba(0,0,0,.5)", border: "3px solid rgba(255,255,255,.25)", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}><div style={{ width: 84, height: 84, borderRadius: 24, background: C.sun, display: "grid", placeItems: "center" }}><Smartphone size={50} color={C.ink} /></div>
+            <div style={{ fontFamily: BN, fontSize: 48, fontWeight: 800, color: "#fff" }}>নিজের গলায় রেকর্ড করো</div></div>
+          <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 16 }}>
+            {(s.steps as string[]).map((st, i) => (
+              <Rise key={i} d={t.a + t.frames * (0.1 + i * 0.16)}>
+                <div style={{ display: "flex", alignItems: "center", gap: 18, padding: "14px 22px", borderRadius: 18, background: "rgba(255,255,255,.12)" }}>
+                  <div style={{ width: 50, height: 50, borderRadius: 25, background: "#fff", display: "grid", placeItems: "center", fontFamily: BN, fontSize: 28, fontWeight: 900, color: C.violet, flex: "none" }}>{bn(i + 1)}</div>
+                  <span style={{ fontFamily: BN, fontSize: 36, fontWeight: 700, color: "#fff" }}>{st}</span>
+                </div>
+              </Rise>
+            ))}
+          </div>
+          <div style={{ position: "absolute", right: -40, top: -50, width: 170, height: 170, borderRadius: 85, background: C.sun, display: "grid", placeItems: "center", transform: `scale(${xp}) rotate(${(1 - xp) * 180 + 10}deg)`, boxShadow: "0 20px 40px rgba(0,0,0,.4)" }}>
+            <div style={{ textAlign: "center", fontFamily: EN, fontWeight: 900, color: C.ink }}><Trophy size={40} /><div style={{ fontSize: 40 }}>+{s.xp || 20}</div><div style={{ fontSize: 22 }}>XP</div></div>
+          </div>
+        </div>
+      </Pop>
+      <SFX at={t.a + t.frames * 0.8} name="chime" vol={0.25} />
+    </AbsoluteFill>
+  );
+};
+
 const SReward: React.FC<P> = ({ s, spec }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig(); const t = s.beats[0];
   const xp = Math.round(interpolate(f, [t.a + 20, t.a + 80], [0, 30], clamp));
   return (
     <AbsoluteFill>
       <div style={{ position: "absolute", left: 100, top: 220 }}><Pop d={4}><Anime look="sensei" size={360} a={teacherAmp(s, f) || lineAmp(s, f)} mood="happy" wave /></Pop></div>
-      <div style={{ position: "absolute", left: 540, right: 100, top: 150 }}>
+      <div style={{ position: "absolute", left: 540, right: 100, top: s.before ? 110 : 150 }}>
         <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
           <Pop d={8}><div style={{ width: 150, height: 150, borderRadius: 75, background: C.sun, display: "grid", placeItems: "center", boxShadow: `0 0 60px ${C.sun}` }}><Trophy size={84} color={C.ink} /></div></Pop>
           <div>
@@ -495,33 +595,38 @@ const SReward: React.FC<P> = ({ s, spec }) => {
             </div>
           </div>
         </div>
-        <div style={{ marginTop: 40, display: "flex", flexWrap: "wrap", gap: 16 }}>
+        {s.before && <Rise d={t.a + 10} style={{ marginTop: 30 }}><div style={{ display: "flex", alignItems: "stretch", gap: 18 }}>
+          <div style={{ flex: 1, padding: "16px 22px", borderRadius: 20, background: "rgba(230,57,70,.14)", border: `2px solid ${C.red}88` }}><div style={{ fontFamily: BN, fontSize: 24, color: C.mute }}>ক্লাসের আগে</div><div style={{ fontFamily: BN, fontSize: 32, fontWeight: 700, color: "#fff" }}>❌ {s.before}</div></div>
+          <ArrowRight size={50} color={C.sun} style={{ alignSelf: "center", flex: "none" }} />
+          <div style={{ flex: 1, padding: "16px 22px", borderRadius: 20, background: "rgba(61,220,151,.16)", border: `2px solid ${C.mint}` }}><div style={{ fontFamily: BN, fontSize: 24, color: C.mute }}>এখন</div><div style={{ fontFamily: BN, fontSize: 32, fontWeight: 700, color: "#fff" }}>✅ {s.after}</div></div>
+        </div></Rise>}
+        <div style={{ marginTop: 22, display: "flex", flexWrap: "wrap", gap: 12 }}>
           {(s.words as [string, string][]).map(([jp, m], i) => (
             <Pop key={i} d={t.a + 30 + i * 10} rot={[-2, 2, -1, 1, -2][i]}>
-              <div style={{ padding: "14px 24px", borderRadius: 20, background: "#fff", boxShadow: "0 14px 30px rgba(0,0,0,.35)" }}><span style={{ fontFamily: MARU, fontSize: 42, color: C.ink }}>{jp}</span><span style={{ fontFamily: BN, fontSize: 28, color: "#5B6390", marginLeft: 14 }}>{m}</span></div>
+              <div style={{ padding: s.before ? "8px 18px" : "14px 24px", borderRadius: 18, background: "#fff", boxShadow: "0 14px 30px rgba(0,0,0,.35)" }}><span style={{ fontFamily: MARU, fontSize: s.before ? 32 : 42, color: C.ink }}>{jp}</span><span style={{ fontFamily: BN, fontSize: 28, color: "#5B6390", marginLeft: 14 }}>{m}</span></div>
             </Pop>
           ))}
         </div>
-        <Rise d={t.a + t.frames * 0.6} style={{ marginTop: 40 }}>
+        <Rise d={t.a + t.frames * 0.6} style={{ marginTop: s.before ? 22 : 40 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 22, padding: "22px 34px", borderRadius: 24, background: "rgba(255,255,255,.08)", border: `2px solid ${C.line}` }}>
             <span style={{ fontFamily: BN, fontSize: 30, color: C.mute }}>পরের পাঠ</span><ArrowRight size={34} color={C.sun} />
             <span style={{ fontFamily: BN, fontSize: 40, fontWeight: 800, color: "#fff" }}>{spec.next.bn}</span><span style={{ fontFamily: MARU, fontSize: 38, color: C.sakura }}>{spec.next.jp}</span>
           </div>
         </Rise>
-        <Rise d={t.a + t.frames * 0.8} style={{ marginTop: 36 }}><Img src={staticFile("brand/logo-dark.png")} style={{ height: 76 }} /></Rise>
+        {!s.before && <Rise d={t.a + t.frames * 0.8} style={{ marginTop: 36 }}><Img src={staticFile("brand/logo-dark.png")} style={{ height: 76 }} /></Rise>}
       </div>
       <Confetti at={8} x={1200} y={260} n={90} />
     </AbsoluteFill>
   );
 };
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, roleplay: SRole, quiz: SQuiz, reward: SReward };
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
 const Header: React.FC<{ spec: Spec; starts: number[] }> = ({ spec, starts }) => {
   const f = useCurrentFrame(); const k = starts.filter((s) => f >= s).length;
-  const xp = spec.scenes.reduce((n, s, i) => { const h = s.type === "quiz" ? byKey(s, "count") : null; return n + (h && f >= starts[i] + h.b ? 10 : 0); }, 0);
+  const xp = spec.scenes.reduce((n, s, i) => { const h = s.type === "quiz" ? byKey(s, "count") : null; return n + (h && f >= starts[i] + h.b ? 10 : 0) + (s.type === "mission" && f >= starts[i] + s.beats[0].a + s.beats[0].frames * 0.8 ? (s.xp || 20) : 0); }, 0);
   return (
     <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 92, display: "flex", alignItems: "center", gap: 22, padding: "0 50px", background: "linear-gradient(rgba(8,11,36,.7), transparent)" }}>
       <Img src={staticFile("brand/logo-dark.png")} style={{ height: 50 }} />
