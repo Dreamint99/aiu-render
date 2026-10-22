@@ -38,13 +38,13 @@ const Caption: React.FC<{ s: PScene; v: boolean }> = ({ s, v }) => {
   return <div style={{ position: "absolute", left: v ? 60 : 200, right: v ? 60 : 200, bottom: v ? 380 : 54, display: "flex", justifyContent: "center", opacity: o }}>
     <div style={{ padding: v ? "16px 28px" : "12px 30px", borderRadius: 20, background: "rgba(8,11,36,.86)", fontFamily: BN, fontWeight: 700, fontSize: v ? 50 : 40, color: "#fff", textAlign: "center", lineHeight: 1.3 }}>{parts[Math.max(0, k)]}</div></div>;
 };
-const Bubble: React.FC<{ b: Beat; v: boolean; side: "l" | "r"; max?: number }> = ({ b, v, side, max }) => {
+const Bubble: React.FC<{ b: Beat; v: boolean; side: "l" | "r"; max?: number; bare?: boolean }> = ({ b, v, side, max, bare }) => {
   const W = max || (v ? 900 : 860);
   return <Pop d={b.a - 6}><div style={{ padding: v ? "20px 34px" : "22px 40px", borderRadius: 34, [side === "l" ? "borderBottomLeftRadius" : "borderBottomRightRadius"]: 6, background: "#fff", boxShadow: "0 24px 50px rgba(0,0,0,.4)", textAlign: "center", maxWidth: W } as any}>
     <KanaKaraoke b={b} text={b.j!} size={fit(b.j!, v ? 80 : 84, W - 80)} />
-    <div style={{ fontFamily: EN, fontSize: v ? 32 : 30, fontWeight: 700, color: "#5B6390" }}>{b.ro}</div>
-    <Bro b={b} size={v ? 38 : 34} color={C.red} />
-    {b.bn && <div style={{ fontFamily: BN, fontSize: v ? 34 : 30, fontWeight: 600, color: "#4A5280" }}>{b.bn}</div>}
+    {!bare && <><div style={{ fontFamily: EN, fontSize: v ? 32 : 30, fontWeight: 700, color: "#5B6390" }}>{b.ro}</div>
+    <Bro b={b} size={v ? 38 : 34} color={C.red} /></>}
+    {b.bn && !bare && <div style={{ fontFamily: BN, fontSize: v ? 34 : 30, fontWeight: 600, color: "#4A5280" }}>{b.bn}</div>}
   </div></Pop>;
 };
 
@@ -68,7 +68,7 @@ const SMoment: React.FC<SP> = ({ s, v }) => {
         <div style={{ marginTop: 8, display: "inline-block", padding: "6px 20px", borderRadius: 20, background: C.ink, fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{NAME[partner]}</div>
       </div>
       {cur && f < cur.b + 24 && <div style={{ position: "absolute", left: 0, right: 0, top: v ? 300 : 120, display: "flex", justifyContent: "center" }}>
-        {lost ? <div style={{ position: "relative" }}><Bubble b={cur} v={v} side={cur.who === "M" ? "l" : "r"} />
+        {lost ? <div style={{ position: "relative" }}><Bubble b={cur} v={v} side={cur.who === "M" ? "l" : "r"} bare />
           {f > cur.b - 4 && <div style={{ position: "absolute", inset: 0, borderRadius: 34, background: "rgba(8,11,36,.55)", display: "grid", placeItems: "center", opacity: interpolate(f, [cur.b - 4, cur.b + 6], [0, 1], clamp) }}><span style={{ fontFamily: BN, fontWeight: 800, fontSize: v ? 56 : 52, color: "#fff" }}>…কিছুই বুঝলাম না 😟</span></div>}</div>
           : <Bubble b={cur} v={v} side={cur.who === "M" ? "l" : "r"} />}
       </div>}
