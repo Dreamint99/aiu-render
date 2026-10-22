@@ -823,6 +823,3 @@ export const JapaneseVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
     </AbsoluteFill>
   );
 };
-// for the course promo (src/japanesepromo/JapanesePromo.tsx)
-export { WORLDS, Studio, KanaKaraoke, Confetti };
-export type { Look };
