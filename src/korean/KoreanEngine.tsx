@@ -7,7 +7,7 @@
 // Owner's default flow for EVERY lesson (korean_make.py checks it): cinematic hook in a real place (5–15 s) → title/goals →
 // learn (listen → see each block built from jamo) → speak (slow, normal, mic gap) → grammar blocks → fix → context → roleplay (subtitled, then
 // 'your turn') → 3+ challenges (last = boss) → mission → reward (before/after) + next-lesson teaser. Never a talking-head classroom.
-// Scene types: hook · title · recall · learn · speak · grammar · secret · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
+// Scene types: hook · title · recall · hangul · learn · speak · grammar · secret · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
 import React from "react";
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender, random } from "remotion";
 import { Check, Mic, Headphones, Sparkles, Zap, Volume2, Trophy, Flame, Star, Sun, Heart, Hand, ArrowRight, Turtle, Gauge, Blocks, HardHat, Gamepad2, Target, X, Wrench, Brain, MapPin, UtensilsCrossed, TrainFront, Store } from "lucide-react";
@@ -763,7 +763,51 @@ const SRecall: React.FC<P> = ({ s }) => {
   );
 };
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, secret: SSecret, recall: SRecall, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
+// hangul (letters lessons): rows of syllables (e.g. 아 어 오) light up as the native voice reads them; then a big card walks through each one with its
+// romaji, Bangla sound and memory hint. Spec: rows:[{chars:[{k (syllable),jamo?,ro,bn,hint}]}], beats r<i> (j = the row's characters) + x<i> (teacher hints)
+const SHangul: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig();
+  const rows = s.rows as { chars: { k: string; jamo?: string; ro: string; bn?: string; hint?: string }[] }[];
+  let focus: { k: string; jamo?: string; ro: string; bn?: string; hint?: string } | null = null; let fi = -1, fr = -1;
+  rows.forEach((r, i) => { const x = byKey(s, `x${i}`); if (x && f >= x.a && f < x.b + 6) { fi = Math.min(r.chars.length - 1, Math.floor(((f - x.a) / x.frames) * r.chars.length)); fr = i; focus = r.chars[fi]; } });
+  const n = Math.max(...rows.map((r) => r.chars.length)); const tile = Math.min(150, 1500 / n - 18);
+  return (
+    <AbsoluteFill>
+      <Kicker text={s.head || "নতুন হাংগুল অক্ষর"} color={C.sky} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: 230, display: "flex", flexDirection: "column", alignItems: "center", gap: 22 }}>
+        {rows.map((r, i) => {
+          const say = byKey(s, `r${i}`)!; const st = charStarts(say, r.chars.map((c) => c.k).join(""));
+          if (f < say.a - 20) return <div key={i} style={{ height: tile + 50 }} />;
+          return (
+            <div key={i} style={{ display: "flex", gap: 16 }}>
+              {r.chars.map((c, j) => {
+                const at = say.a + st[j]; const lit = f >= at; const now = lit && f < at + 10; const foc = fr === i && fi === j;
+                return (
+                  <Pop key={j} d={say.a - 16 + j * 2}>
+                    <div style={{ width: tile, textAlign: "center" }}>
+                      <div style={{ height: tile, borderRadius: 22, background: lit ? "#fff" : "rgba(255,255,255,.12)", display: "grid", placeItems: "center", boxShadow: now || foc ? `0 0 0 7px ${C.sun}, 0 0 50px ${C.sun}` : "0 14px 30px rgba(0,0,0,.35)", transform: `translateY(${now || foc ? -12 : 0}px)` }}>
+                        <span style={{ fontFamily: MARU, fontSize: tile * 0.66, color: lit ? C.ink : "rgba(255,255,255,.5)" }}>{c.k}</span>
+                      </div>
+                      <div style={{ marginTop: 8, fontFamily: EN, fontSize: Math.min(34, tile * 0.28), fontWeight: 800, color: lit ? C.sun : C.mute }}>{c.jamo ? <span style={{ fontFamily: MARU, marginRight: 8 }}>{c.jamo}</span> : null}{c.ro}</div>
+                    </div>
+                  </Pop>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      {focus && <div style={{ position: "absolute", left: 300, right: 300, bottom: 150, display: "flex", alignItems: "center", gap: 36, padding: "24px 40px", borderRadius: 32, background: "rgba(8,11,36,.9)", border: `3px solid ${C.sun}` }}>
+        <span style={{ fontFamily: MARU, fontSize: 150, color: "#fff", lineHeight: 1 }}>{(focus as any).k}</span>
+        <div><div style={{ fontFamily: EN, fontSize: 48, fontWeight: 900, color: C.sun }}>{(focus as any).ro}{(focus as any).bn ? <span style={{ fontFamily: BN, color: "#fff", marginLeft: 18 }}>({(focus as any).bn})</span> : null}</div>
+          {(focus as any).hint && <div style={{ fontFamily: BN, fontSize: 34, color: "#fff", lineHeight: 1.35, marginTop: 6 }}>💡 {mix((focus as any).hint)}</div>}</div>
+      </div>}
+      {rows.map((_, i) => <SFX key={i} at={byKey(s, `r${i}`)!.a - 16} name="whoosh" vol={0.15} />)}
+    </AbsoluteFill>
+  );
+};
+
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, secret: SSecret, recall: SRecall, hangul: SHangul, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
