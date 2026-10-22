@@ -7,7 +7,7 @@
 // Owner's default flow for EVERY lesson (korean_make.py checks it): cinematic hook in a real place (5–15 s) → title/goals →
 // learn (listen → see each block built from jamo) → speak (slow, normal, mic gap) → grammar blocks → fix → context → roleplay (subtitled, then
 // 'your turn') → 3+ challenges (last = boss) → mission → reward (before/after) + next-lesson teaser. Never a talking-head classroom.
-// Scene types: hook · title · learn · speak · grammar · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
+// Scene types: hook · title · learn · speak · grammar · secret · fix · context · roleplay · quiz (last: boss) · mission · reward (CLASS_RULES.md)
 import React from "react";
 import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig, Easing, delayRender, continueRender, random } from "remotion";
 import { Check, Mic, Headphones, Sparkles, Zap, Volume2, Trophy, Flame, Star, Sun, Heart, Hand, ArrowRight, Turtle, Gauge, Blocks, HardHat, Gamepad2, Target, X, Wrench, Brain, MapPin, UtensilsCrossed, TrainFront, Store } from "lucide-react";
@@ -677,7 +677,38 @@ const SMission: React.FC<P> = ({ s }) => {
   );
 };
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
+// signature secret: a true life hack / Bangla bridge / insider tip — a golden "key" card, Bangla side vs target-language side
+const SSecret: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const t = s.beats[0]; const k = pop(f, fps, 6);
+  const pairs = (s.pairs || []) as [string, string][]; const jb = s.beats.find((x) => x.j); const said = !!jb && f >= jb.a - 6;
+  return (
+    <AbsoluteFill>
+      <Kicker text={s.kind || "সিক্রেট হ্যাক"} color={C.sun} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: 210, display: "flex", justifyContent: "center" }}>
+        <div style={{ width: 1400, borderRadius: 40, padding: "40px 56px", background: "linear-gradient(135deg, #3A2A05, #6B4A0A)", border: `4px solid ${C.sun}`, boxShadow: `0 0 ${60 + Math.sin(f / 8) * 20}px ${C.sun}66, 0 40px 80px rgba(0,0,0,.5)`, transform: `scale(${0.85 + 0.15 * k})`, opacity: Math.min(1, k * 1.4) }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}><span style={{ fontSize: 80 }}>🔑</span><div style={{ fontFamily: BN, fontSize: 58, fontWeight: 800, color: C.sun, lineHeight: 1.2 }}>{s.head}</div></div>
+          {pairs.length > 0 && <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16 }}>
+            {pairs.map(([b, j], i) => (
+              <Rise key={i} d={t.a + t.frames * (0.2 + i * 0.18)}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 1fr", alignItems: "center" }}>
+                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "rgba(255,255,255,.1)", fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#fff" }}>{b}</div>
+                  <div style={{ textAlign: "center", fontFamily: EN, fontSize: 50, fontWeight: 900, color: C.sun }}>=</div>
+                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "#fff", fontFamily: MARU, fontSize: 40, fontWeight: 800, color: C.ink }}>{j}</div>
+                </div>
+              </Rise>
+            ))}
+          </div>}
+          {said && jb && <Pop d={jb.a - 6} style={{ marginTop: 26, display: "flex", justifyContent: "center" }}><div style={{ padding: "14px 40px", borderRadius: 26, background: "#fff", textAlign: "center" }}><KanaKaraoke b={jb} text={jb.j!} size={60} /><div style={{ fontFamily: EN, fontSize: 26, fontWeight: 800, color: C.red }}>{jb.ro} <span style={{ fontFamily: BN, color: "#5B6390" }}>· {jb.bn}</span></div></div></Pop>}
+          {s.why && !said && <Rise d={t.a + t.frames * 0.75} style={{ marginTop: 26 }}><div style={{ fontFamily: BN, fontSize: 32, color: "#FFE9B0", lineHeight: 1.4 }}>💡 {mix(s.why)}</div></Rise>}
+        </div>
+      </div>
+      <SFX at={6} name="chime" vol={0.3} />
+    </AbsoluteFill>
+  );
+};
+
+
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, secret: SSecret, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
