@@ -95,12 +95,15 @@ const KanaKaraoke: React.FC<{ b: Beat; text: string; size: number; color?: strin
 };
 
 /* ---------- anime characters ---------- */
-type Look = "sensei" | "yui" | "rafi";
+type Look = "sensei" | "yui" | "rafi" | "boss";
 const LOOKS: Record<Look, { skin: string; hair: string; iris: string; top: string; top2: string }> = {
   sensei: { skin: "#E0A77E", hair: "#16121F", iris: "#5B3A29", top: "#23306B", top2: "#FFFFFF" },
   yui: { skin: "#F6D2B8", hair: "#6B3A2A", iris: "#8A4B2E", top: "#2D9CDB", top2: "#FFFFFF" },
   rafi: { skin: "#C98B62", hair: "#120E18", iris: "#3B2618", top: "#1F9D6B", top2: "#0E5E40" },
+  boss: { skin: "#EFC9A8", hair: "#5F6170", iris: "#3B2E2A", top: "#2B2F3A", top2: "#FFFFFF" },
 };
+const DEF_LOOK: Record<string, Look> = { F: "yui", M: "rafi", B: "boss" };
+const lookOf = (spec: Spec, k: string): Look => ((spec.cast[k] as any)?.look as Look) || DEF_LOOK[k] || "yui";
 export const Anime: React.FC<{ look: Look; size: number; a: number; mood?: "calm" | "happy" | "wow"; wave?: boolean; bg?: string }> = ({ look, size, a, mood = "calm", wave, bg }) => {
   const f = useCurrentFrame(); const L = LOOKS[look]; const id = `${look}${size}`;
   const blink = (f + look.length * 31) % 109 < 4 ? 0.1 : 1; const m = Math.min(1, a * 1.3); const bob = Math.sin(f / 18) * 2 + a * 3;
@@ -123,7 +126,7 @@ export const Anime: React.FC<{ look: Look; size: number; a: number; mood?: "calm
         {wave && <g transform={`rotate(${-18 + Math.sin(f / 4) * 14} 150 170)`}><rect x="146" y="96" width="22" height="78" rx="11" fill={L.top} /><circle cx="157" cy="92" r="13" fill={L.skin} /></g>}
         <g transform={`translate(0 ${-bob * 0.4})`}>
           <path d="M28 205 C32 162 62 148 100 148 C138 148 168 162 172 205 Z" fill={L.top} />
-          {look === "sensei" && <><path d="M86 148 L100 170 L114 148 Z" fill={L.top2} /><path d="M97 158 L100 192 L103 158 Z" fill={C.red} /></>}
+          {(look === "sensei" || look === "boss") && <><path d="M86 148 L100 170 L114 148 Z" fill={L.top2} /><path d="M97 158 L100 192 L103 158 Z" fill={C.red} /></>}
           {look === "yui" && <><rect x="72" y="160" width="56" height="44" rx="6" fill={L.top2} opacity={0.9} /><rect x="80" y="168" width="22" height="8" rx="3" fill={C.red} /><path d="M28 205 C34 176 50 166 70 160 L70 205 Z" fill="#1E6FB0" /><path d="M172 205 C166 176 150 166 130 160 L130 205 Z" fill="#1E6FB0" /></>}
           {look === "rafi" && <><path d="M74 150 Q100 176 126 150" stroke={L.top2} strokeWidth={8} fill="none" /><rect x="58" y="160" width="10" height="45" rx="5" fill="#2B2B3A" /><rect x="132" y="160" width="10" height="45" rx="5" fill="#2B2B3A" /></>}
           <rect x="89" y="128" width="22" height="24" rx="9" fill={L.skin} />
@@ -133,6 +136,7 @@ export const Anime: React.FC<{ look: Look; size: number; a: number; mood?: "calm
           <path d="M60 84 C58 52 80 40 100 40 C120 40 142 52 140 84 L138 112 C134 136 116 146 100 146 C84 146 66 136 62 112 Z" fill={L.skin} />
           {look === "sensei" && <path d="M56 92 C50 44 82 30 104 32 C130 32 152 48 146 92 C142 72 132 62 118 58 C114 70 96 66 86 58 C74 62 62 72 56 92 Z" fill={L.hair} />}
           {look === "yui" && <><path d="M54 104 C46 44 154 44 146 104 C140 72 126 62 110 60 C104 72 86 72 80 60 C68 64 58 78 54 104 Z" fill={L.hair} /><circle cx="134" cy="66" r="7" fill={C.red} /><circle cx="142" cy="72" r="5" fill={C.sakura} /></>}
+          {look === "boss" && <path d="M58 90 C54 52 82 38 102 38 C126 38 148 52 142 90 C138 70 128 60 112 58 C100 62 82 60 70 68 C62 74 58 82 58 90 Z" fill={L.hair} />}
           {look === "rafi" && <path d="M58 90 C52 46 82 34 102 34 C126 34 150 48 144 90 C140 70 130 58 120 56 L116 66 L106 56 L96 68 L88 56 C72 60 62 72 58 90 Z" fill={L.hair} />}
           {eye(82)}{eye(118)}
           {look === "sensei" && <><rect x="66" y="84" width="32" height="26" rx="12" fill="none" stroke="#1A1424" strokeWidth={3} /><rect x="102" y="84" width="32" height="26" rx="12" fill="none" stroke="#1A1424" strokeWidth={3} /><path d="M98 95 L102 95" stroke="#1A1424" strokeWidth={3} /></>}
@@ -203,6 +207,28 @@ const Store: React.FC = () => {
     </AbsoluteFill>
   );
 };
+// workplace (genba): factory floor with a machine, conveyor and safety signs
+const Work: React.FC = () => {
+  const f = useCurrentFrame(); const on = Math.floor(f / 15) % 3;
+  return (
+    <AbsoluteFill style={{ background: "linear-gradient(#DCE3EA, #C3CDD8)", overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 120, height: 40, background: "repeating-linear-gradient(45deg, #FFC845 0 40px, #1E1E26 40px 80px)" }} />
+      <div style={{ position: "absolute", left: 90, top: 210, padding: "14px 26px", borderRadius: 12, background: "#1F9D6B", color: "#fff", fontFamily: JP, fontWeight: 900, fontSize: 48, boxShadow: "0 8px 20px rgba(0,0,0,.2)" }}>＋ 安全第一</div>
+      <div style={{ position: "absolute", right: 120, top: 200, width: 120, height: 120, borderRadius: "50%", background: "#fff", border: "8px solid #2B2F3A", display: "grid", placeItems: "center" }}><div style={{ width: 6, height: 44, background: "#2B2F3A", transformOrigin: "50% 100%", transform: `translateY(-22px) rotate(${f * 0.5}deg)` }} /></div>
+      <div style={{ position: "absolute", left: 640, top: 230, width: 640, height: 420, borderRadius: 30, background: "linear-gradient(#5D7184, #3E4E5E)", boxShadow: "inset 0 -20px 0 rgba(0,0,0,.2)" }}>
+        {[0, 1, 2].map((i) => <div key={i} style={{ position: "absolute", left: 50 + i * 110, top: 50, width: 70, height: 70, borderRadius: "50%", background: "#1C232B", border: "6px solid #8FA3B5" }}><div style={{ width: 6, height: 28, margin: "6px auto", background: C.sun, transform: `rotate(${Math.sin(f / 20 + i) * 60}deg)`, transformOrigin: "50% 100%" }} /></div>)}
+        {[C.mint, C.sun, C.red].map((c, i) => <div key={i} style={{ position: "absolute", right: 60, top: 50 + i * 60, width: 34, height: 34, borderRadius: "50%", background: c, boxShadow: on === i ? `0 0 24px ${c}` : "none", opacity: on === i ? 1 : 0.4 }} />)}
+        <div style={{ position: "absolute", left: 50, right: 50, bottom: 50, height: 90, borderRadius: 14, background: "#1C232B", color: "#3DDC97", fontFamily: EN, fontWeight: 800, fontSize: 40, display: "flex", alignItems: "center", paddingLeft: 30 }}>LINE 3 · RUN</div>
+      </div>
+      <div style={{ position: "absolute", left: -20, right: -20, bottom: 300, height: 70, background: "#2B2F3A" }}>
+        {Array.from({ length: 9 }, (_, i) => <div key={i} style={{ position: "absolute", bottom: 70, left: ((i * 260 + f * 3) % 2340) - 200, width: 140, height: 110, background: "#C9965C", border: "4px solid #9C7140", borderRadius: 6 }} />)}
+      </div>
+      <div style={{ position: "absolute", left: -20, right: -20, bottom: 0, height: 300, background: "linear-gradient(#8A97A6, #6E7B8A)" }} />
+    </AbsoluteFill>
+  );
+};
+const WORLDS: Record<string, React.FC> = { street: () => <Street />, store: () => <Store />, work: () => <Work /> };
+
 const Studio: React.FC = () => {
   const f = useCurrentFrame();
   const blob = (x: number, y: number, r: number, c: string, ph: number) => <div style={{ position: "absolute", left: x + Math.sin(f / 90 + ph) * 80, top: y + Math.cos(f / 110 + ph) * 60, width: r, height: r, borderRadius: "50%", background: c, filter: "blur(120px)", opacity: 0.35 }} />;
@@ -217,24 +243,25 @@ const Studio: React.FC = () => {
 };
 
 /* ---------- scenes ---------- */
-const SHook: React.FC<P> = ({ s }) => {
+const SHook: React.FC<P> = ({ s, spec }) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig();
   const j = s.beats.find((b) => b.j)!; const t = s.beats.find((b) => b.t)!;
-  const q = "Can you understand Japanese?".split(" ");
+  const q = ((s.question as string) || "Can you understand Japanese?").split(" "); const W = WORLDS[s.world || "street"] || Street;
+  const who = j.who || "F";
   return (
     <AbsoluteFill>
-      <Street />
+      <W />
       <div style={{ position: "absolute", right: 170, bottom: 120, transform: `translateY(${(1 - ent(f, fps, j.a - 26)) * 300}px)` }}>
-        <Anime look="yui" size={360} a={lineAmp(s, f, "F")} mood={f > j.b ? "happy" : "calm"} wave={f >= j.a && f < j.b + 30} />
+        <Anime look={lookOf(spec, who)} size={360} a={lineAmp(s, f, who)} mood={f > j.b ? "happy" : "calm"} wave={f >= j.a && f < j.b + 30} />
       </div>
-      {f >= j.a - 4 && <div style={{ position: "absolute", right: 480, bottom: 380 }}>
-        <Pop d={j.a - 4}><div style={{ padding: "26px 44px", borderRadius: 40, borderBottomRightRadius: 6, background: "#fff", boxShadow: "0 30px 60px rgba(0,0,0,.5)" }}><KanaKaraoke b={j} text="こんにちは！" size={110} /><div style={{ fontFamily: EN, fontSize: 34, fontWeight: 700, color: "#5B6390", marginTop: 4 }}>{j.ro}</div></div></Pop>
+      {f >= j.a - 4 && <div style={{ position: "absolute", right: 470, bottom: 200, maxWidth: 1000 }}>
+        <Pop d={j.a - 4}><div style={{ padding: "26px 44px", borderRadius: 40, borderBottomRightRadius: 6, background: "#fff", boxShadow: "0 30px 60px rgba(0,0,0,.5)" }}><KanaKaraoke b={j} text={j.show || j.j!} size={j.j!.length > 9 ? 74 : 110} /><div style={{ fontFamily: EN, fontSize: 34, fontWeight: 700, color: "#5B6390", marginTop: 4 }}>{j.ro}</div></div></Pop>
       </div>}
       <div style={{ position: "absolute", left: 70, top: 150, width: 800, padding: "36px 40px 44px", borderRadius: 36, background: "rgba(8,6,28,.72)", boxShadow: "0 30px 80px rgba(0,0,0,.5)", opacity: interpolate(f, [j.b, j.b + 10], [0, 1], clamp) }}>
         <div style={{ fontFamily: EN, fontSize: 88, fontWeight: 900, color: "#fff", lineHeight: 1.08, textShadow: "0 10px 40px rgba(0,0,0,.6)" }}>
-          {q.map((w, i) => { const d = j.b + 8 + i * 5; const k = pop(f, fps, d); return <span key={i} style={{ display: "inline-block", marginRight: 26, opacity: Math.min(1, k * 1.4), transform: `translateY(${(1 - k) * 60}px) rotate(${(1 - k) * -8}deg)`, color: w === "Japanese?" ? C.sun : "#fff" }}>{w}</span>; })}
+          {q.map((w, i) => { const d = j.b + 8 + i * 5; const k = pop(f, fps, d); return <span key={i} style={{ display: "inline-block", marginRight: 26, opacity: Math.min(1, k * 1.4), transform: `translateY(${(1 - k) * 60}px) rotate(${(1 - k) * -8}deg)`, color: i === q.length - 1 ? C.sun : "#fff" }}>{w}</span>; })}
         </div>
-        <Rise d={t.a + 10} style={{ marginTop: 22 }}><span style={{ padding: "10px 26px", borderRadius: 30, background: C.red, fontFamily: BN, fontSize: 44, fontWeight: 800, color: "#fff" }}>তুমি কি জাপানি বোঝো?</span></Rise>
+        <Rise d={t.a + 10} style={{ marginTop: 22 }}><span style={{ padding: "10px 26px", borderRadius: 30, background: C.red, fontFamily: BN, fontSize: 44, fontWeight: 800, color: "#fff" }}>{s.questionBn || "তুমি কি জাপানি বোঝো?"}</span></Rise>
       </div>
       <SFX at={j.a - 4} name="pop" vol={0.3} /><SFX at={j.b + 8} name="whoosh" vol={0.25} />
     </AbsoluteFill>
@@ -358,6 +385,7 @@ const SGrammar: React.FC<P> = ({ s }) => {
         {rows.map((row, r) => {
           const say = byKey(s, `r${r}`)!; const ex = byKey(s, `e${r}`)!; if (f < say.a - 14) return <div key={r} style={{ height: 260 }} />;
           const text = row.blocks.map((b) => b[0]).join(""); const st = charStarts(say, text); let ci = 0;
+          const fs = text.length > 12 ? 58 : text.length > 8 ? 72 : 96;
           return (
             <div key={r} style={{ height: 260 }}>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", gap: 26 }}>
@@ -368,7 +396,7 @@ const SGrammar: React.FC<P> = ({ s }) => {
                     <Pop key={i} d={at - 4} rot={[-3, 2, -2][i % 3]}>
                       <div style={{ textAlign: "center" }}>
                         <div style={{ padding: "20px 44px", borderRadius: 26, background: col, boxShadow: hot ? `0 0 0 8px #fff, 0 0 60px ${col}` : `0 16px 0 rgba(0,0,0,.25), 0 26px 50px rgba(0,0,0,.4)`, transform: `translateY(${hot ? -10 : 0}px)` }}>
-                          <div style={{ fontFamily: MARU, fontSize: 96, color: C.ink, lineHeight: 1.1 }}>{jp}</div>
+                          <div style={{ fontFamily: MARU, fontSize: fs, color: C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{jp}</div>
                           <div style={{ fontFamily: EN, fontSize: 34, fontWeight: 800, color: "rgba(16,20,46,.7)" }}>{ro}</div>
                         </div>
                         <div style={{ marginTop: 16, fontFamily: BN, fontSize: 34, fontWeight: 700, color: "#fff", opacity: interpolate(f, [lab, lab + 10], [0, 1], clamp), transform: `translateY(${interpolate(f, [lab, lab + 10], [16, 0], clamp)}px)` }}>{mean}</div>
@@ -392,7 +420,9 @@ const SRole: React.FC<P> = ({ s, spec }) => {
   const intro = s.beats[0]; const scene = f >= intro.b - 10;
   const cur = s.beats.filter((b) => (b.j || b.gap) && f >= b.a - 6).pop();
   const k = ent(f, fps, intro.b - 10, 30);
-  const bottle = s.beats.find((b) => b.j?.startsWith("これ")); const price = s.beats.find((b) => b.j?.startsWith("百"));
+  const world = s.world || "store"; const W = WORLDS[world] || Store; const shop = world === "store";
+  const partner = s.beats.find((b) => b.j && b.who !== "M")?.who || "F";
+  const bottle = shop ? s.beats.find((b) => b.j?.startsWith("これ")) : undefined; const price = shop ? s.beats.find((b) => b.j?.startsWith("百")) : undefined;
   const bubble = (b: Beat) => {
     const L = b.who === "M"; const hide = pass2 && !L;
     return (
@@ -406,23 +436,23 @@ const SRole: React.FC<P> = ({ s, spec }) => {
   };
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: k, transform: `scale(${1.1 - 0.1 * k})` }}><Store /></AbsoluteFill>
+      <AbsoluteFill style={{ opacity: k, transform: `scale(${1.1 - 0.1 * k})` }}><W /></AbsoluteFill>
       {!scene && <AbsoluteFill style={{ background: "rgba(8,11,36,.55)" }} />}
-      <Kicker text={pass2 ? "তোমার পালা — তুমি রাফি!" : "রোলপ্লে · কনভিনিয়েন্স স্টোর"} color={pass2 ? C.red : C.mint} icon={ShoppingBasket} />
+      <Kicker text={pass2 ? "তোমার পালা — তুমি রাফি!" : `রোলপ্লে · ${s.place || (shop ? "কনভিনিয়েন্স স্টোর" : "কাজের জায়গা")}`} color={pass2 ? C.red : C.mint} icon={ShoppingBasket} />
       {scene && <>
         <div style={{ position: "absolute", left: 90, bottom: 210, textAlign: "center", transform: `translateY(${(1 - k) * 200}px)` }}>
           <Anime look="rafi" size={300} a={lineAmp(s, f, "M")} mood={cur?.gap ? "wow" : "calm"} />
           <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{pass2 ? "তুমি (রাফি)" : spec.cast.M.bn}</div>
         </div>
         <div style={{ position: "absolute", right: 90, bottom: 210, textAlign: "center", transform: `translateY(${(1 - k) * 200}px)` }}>
-          <Anime look="yui" size={300} a={lineAmp(s, f, "F")} mood={f > (s.beats[s.beats.length - 1].b - 40) ? "happy" : "calm"} />
-          <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{spec.cast.F.bn} · দোকানি</div>
+          <Anime look={lookOf(spec, partner)} size={300} a={lineAmp(s, f, partner)} mood={f > (s.beats[s.beats.length - 1].b - 40) ? "happy" : "calm"} />
+          <div style={{ marginTop: 8, padding: "6px 20px", borderRadius: 20, background: C.ink, display: "inline-block", fontFamily: BN, fontSize: 30, fontWeight: 800, color: "#fff" }}>{spec.cast[partner]?.bn}{(spec.cast[partner] as any)?.role ? ` · ${(spec.cast[partner] as any).role}` : shop ? " · দোকানি" : ""}</div>
         </div>
         {bottle && f >= bottle.a - 4 && <Pop d={bottle.a - 4} style={{ position: "absolute", left: 870, bottom: 330 }}><div style={{ width: 70, height: 170, borderRadius: "26px 26px 14px 14px", background: "linear-gradient(90deg, rgba(76,201,240,.9), rgba(200,240,255,.95))", boxShadow: "0 10px 30px rgba(0,0,0,.25)", position: "relative" }}><div style={{ position: "absolute", left: 20, top: -18, width: 30, height: 22, borderRadius: 6, background: "#2D9CDB" }} /><div style={{ position: "absolute", left: 0, right: 0, top: 70, height: 36, background: "#fff", fontFamily: JP, fontSize: 22, fontWeight: 800, color: "#2D9CDB", textAlign: "center", lineHeight: "36px" }}>水</div></div></Pop>}
         {price && f >= price.a && <Pop d={price.a + 6} style={{ position: "absolute", left: 980, bottom: 420 }} rot={-8}><div style={{ padding: "14px 26px", borderRadius: 16, background: C.sun, fontFamily: EN, fontSize: 56, fontWeight: 900, color: C.ink, boxShadow: "0 14px 30px rgba(0,0,0,.3)" }}>¥150</div></Pop>}
         {cur && cur.j && f < cur.b + 30 && bubble(cur)}
         {cur && cur.gap && f < cur.b && (
-          <div style={{ position: "absolute", left: 0, right: 0, top: 170, display: "flex", justifyContent: "center" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 230, display: "flex", justifyContent: "center" }}>
             <Pop d={cur.a}><div style={{ display: "flex", alignItems: "center", gap: 30, padding: "26px 40px", borderRadius: 34, background: C.ink, border: `4px solid ${C.red}`, boxShadow: `0 0 60px ${C.red}88` }}>
               <div style={{ position: "relative", width: 130, height: 130 }}>
                 <svg width={130} height={130} style={{ position: "absolute", transform: "rotate(-90deg)" }}><circle cx={65} cy={65} r={58} stroke="rgba(255,255,255,.15)" strokeWidth={9} fill="none" /><circle cx={65} cy={65} r={58} stroke={C.red} strokeWidth={9} fill="none" strokeDasharray={364} strokeDashoffset={364 * (1 - interpolate(f, [cur.a, cur.b], [1, 0], clamp))} strokeLinecap="round" /></svg>
@@ -460,8 +490,8 @@ const SQuiz: React.FC<P> = ({ s }) => {
             <Rise key={i} d={s.beats[0].a + 10 + i * 6} y={30}>
               <div style={{ display: "flex", alignItems: "center", gap: 26, padding: "18px 30px", borderRadius: 26, background: right ? C.mint : "#fff", opacity: reveal && !right ? 0.35 : 1, transform: right ? `scale(${1 + 0.05 * k})` : "none", boxShadow: right ? `0 0 60px ${C.mint}` : "0 16px 36px rgba(0,0,0,.35)" }}>
                 <div style={{ width: 66, height: 66, borderRadius: 33, background: right ? "#fff" : [C.sky, C.sun, C.sakura][i], display: "grid", placeItems: "center", fontFamily: EN, fontWeight: 900, fontSize: 34, color: C.ink, flex: "none" }}>{right ? <Check size={38} color="#0E9F6E" strokeWidth={4} /> : "ABC"[i]}</div>
-                <span style={{ fontFamily: jp ? MARU : BN, fontSize: jp ? (main.length > 12 ? 46 : 54) : 48, fontWeight: 800, color: C.ink }}>{main}</span>
-                {sub && <span style={{ fontFamily: EN, fontSize: 30, fontWeight: 700, color: "#5B6390" }}>{sub}</span>}
+                <span style={{ fontFamily: jp ? MARU : BN, fontSize: jp ? (main.length > 22 ? 34 : main.length > 12 ? 42 : 54) : main.length > 30 ? 38 : 46, fontWeight: 800, color: C.ink, lineHeight: 1.25 }}>{main}</span>
+                {sub && <span style={{ fontFamily: EN, fontSize: main.length > 12 ? 22 : 30, fontWeight: 700, color: "#5B6390" }}>{sub}</span>}
               </div>
             </Rise>
           );
@@ -474,6 +504,78 @@ const SQuiz: React.FC<P> = ({ s }) => {
       {reveal && <div style={{ position: "absolute", right: 260, top: 300, opacity: interpolate(f, [hold.b, hold.b + 8, hold.b + 50, hold.b + 70], [0, 1, 1, 0], clamp), transform: `translateY(${-interpolate(f, [hold.b, hold.b + 70], [0, 120], clamp)}px)`, fontFamily: EN, fontSize: 80, fontWeight: 900, color: C.sun, textShadow: `0 0 30px ${C.sun}` }}>+10 XP</div>}
       <Confetti at={hold.b} y={560} />
       <SFX at={hold.b} name="chime" vol={0.35} />
+    </AbsoluteFill>
+  );
+};
+
+// kana: rows of characters light up as the native voice reads them; then a big card walks through each one with its
+// romaji, Bangla sound and memory hint. Spec: rows:[{chars:[{k,ro,bn,hint}]}], beats r<i> (j = the row's characters) + x<i> (teacher hints)
+const SKana: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig();
+  const rows = s.rows as { chars: { k: string; ro: string; bn?: string; hint?: string }[] }[];
+  let focus: { k: string; ro: string; bn?: string; hint?: string } | null = null; let fi = -1, fr = -1;
+  rows.forEach((r, i) => { const x = byKey(s, `x${i}`); if (x && f >= x.a && f < x.b + 6) { fi = Math.min(r.chars.length - 1, Math.floor(((f - x.a) / x.frames) * r.chars.length)); fr = i; focus = r.chars[fi]; } });
+  const n = Math.max(...rows.map((r) => r.chars.length)); const tile = Math.min(150, 1500 / n - 18);
+  return (
+    <AbsoluteFill>
+      <Kicker text={s.head || "নতুন অক্ষর"} color={C.sky} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: 230, display: "flex", flexDirection: "column", alignItems: "center", gap: 22 }}>
+        {rows.map((r, i) => {
+          const say = byKey(s, `r${i}`)!; const st = charStarts(say, r.chars.map((c) => c.k).join(""));
+          if (f < say.a - 20) return <div key={i} style={{ height: tile + 50 }} />;
+          return (
+            <div key={i} style={{ display: "flex", gap: 16 }}>
+              {r.chars.map((c, j) => {
+                const at = say.a + st[j]; const lit = f >= at; const now = lit && f < at + 10; const foc = fr === i && fi === j;
+                return (
+                  <Pop key={j} d={say.a - 16 + j * 2}>
+                    <div style={{ width: tile, textAlign: "center" }}>
+                      <div style={{ height: tile, borderRadius: 22, background: lit ? "#fff" : "rgba(255,255,255,.12)", display: "grid", placeItems: "center", boxShadow: now || foc ? `0 0 0 7px ${C.sun}, 0 0 50px ${C.sun}` : "0 14px 30px rgba(0,0,0,.35)", transform: `translateY(${now || foc ? -12 : 0}px)` }}>
+                        <span style={{ fontFamily: MARU, fontSize: tile * 0.66, color: lit ? C.ink : "rgba(255,255,255,.5)" }}>{c.k}</span>
+                      </div>
+                      <div style={{ marginTop: 8, fontFamily: EN, fontSize: Math.min(34, tile * 0.28), fontWeight: 800, color: lit ? C.sun : C.mute }}>{c.ro}</div>
+                    </div>
+                  </Pop>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      {focus && <div style={{ position: "absolute", left: 300, right: 300, bottom: 150, display: "flex", alignItems: "center", gap: 36, padding: "24px 40px", borderRadius: 32, background: "rgba(8,11,36,.9)", border: `3px solid ${C.sun}` }}>
+        <span style={{ fontFamily: MARU, fontSize: 150, color: "#fff", lineHeight: 1 }}>{(focus as any).k}</span>
+        <div><div style={{ fontFamily: EN, fontSize: 48, fontWeight: 900, color: C.sun }}>{(focus as any).ro}{(focus as any).bn ? <span style={{ fontFamily: BN, color: "#fff", marginLeft: 18 }}>({(focus as any).bn})</span> : null}</div>
+          {(focus as any).hint && <div style={{ fontFamily: BN, fontSize: 34, color: "#fff", lineHeight: 1.35, marginTop: 6 }}>💡 {(focus as any).hint}</div>}</div>
+      </div>}
+      {rows.map((_, i) => <SFX key={i} at={byKey(s, `r${i}`)!.a - 16} name="whoosh" vol={0.15} />)}
+    </AbsoluteFill>
+  );
+};
+
+// spaced recall from earlier lessons: prompt → the learner says it during the hold → the native answer
+const SRecall: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame();
+  const items = s.items as { q: string }[];
+  return (
+    <AbsoluteFill>
+      <Kicker text="মনে আছে? আগের ক্লাস" color={C.violet} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 220, right: 220, top: 240, display: "flex", flexDirection: "column", gap: 26 }}>
+        {items.map((it, i) => {
+          const h = byKey(s, `h${i}`)!, j = byKey(s, `j${i}`)!; if (f < h.a - 10) return null;
+          const yours = f >= h.a && f < h.b; const shown = f >= j.a;
+          return (
+            <Rise key={i} d={h.a - 10}>
+              <div style={{ display: "flex", alignItems: "center", gap: 30, padding: "24px 34px", borderRadius: 28, background: shown ? "#fff" : "rgba(255,255,255,.08)", border: `3px solid ${shown ? C.mint : yours ? C.red : C.line}` }}>
+                <div style={{ flex: 1, fontFamily: BN, fontSize: 40, fontWeight: 700, color: shown ? C.ink : "#fff" }}>{it.q}</div>
+                <div style={{ minWidth: 460, textAlign: "right" }}>
+                  {shown ? <><KanaKaraoke b={j} text={j.show || j.j!} size={58} /><div style={{ fontFamily: EN, fontSize: 28, fontWeight: 700, color: "#0E9F6E" }}>{j.ro}</div></>
+                    : yours ? <span style={{ fontFamily: BN, fontSize: 40, fontWeight: 800, color: C.red }}>🎤 মনে করে বলো! {bn(Math.ceil((h.b - f) / 30))}</span> : null}
+                </div>
+              </div>
+            </Rise>
+          );
+        })}
+      </div>
     </AbsoluteFill>
   );
 };
@@ -543,6 +645,35 @@ const SContext: React.FC<P> = ({ s }) => {
         })}
       </div>
       {cards.map((_, i) => <SFX key={i} at={byKey(s, `j${i}`)!.a - 4} name="pop" vol={0.2} />)}
+    </AbsoluteFill>
+  );
+};
+
+// signature secret: a true life hack / Bangla bridge / insider tip — a golden "key" card, Bangla side vs target-language side
+const SSecret: React.FC<P> = ({ s }) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const t = s.beats[0]; const k = pop(f, fps, 6);
+  const pairs = (s.pairs || []) as [string, string][];
+  return (
+    <AbsoluteFill>
+      <Kicker text={s.kind || "সিক্রেট হ্যাক"} color={C.sun} icon={Sparkles} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: 210, display: "flex", justifyContent: "center" }}>
+        <div style={{ width: 1400, borderRadius: 40, padding: "40px 56px", background: "linear-gradient(135deg, #3A2A05, #6B4A0A)", border: `4px solid ${C.sun}`, boxShadow: `0 0 ${60 + Math.sin(f / 8) * 20}px ${C.sun}66, 0 40px 80px rgba(0,0,0,.5)`, transform: `scale(${0.85 + 0.15 * k})`, opacity: Math.min(1, k * 1.4) }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 22 }}><span style={{ fontSize: 80 }}>🔑</span><div style={{ fontFamily: BN, fontSize: 58, fontWeight: 800, color: C.sun, lineHeight: 1.2 }}>{s.head}</div></div>
+          {pairs.length > 0 && <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 16 }}>
+            {pairs.map(([b, j], i) => (
+              <Rise key={i} d={t.a + t.frames * (0.2 + i * 0.18)}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 1fr", alignItems: "center" }}>
+                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "rgba(255,255,255,.1)", fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#fff" }}>🇧🇩 {b}</div>
+                  <div style={{ textAlign: "center", fontFamily: EN, fontSize: 50, fontWeight: 900, color: C.sun }}>=</div>
+                  <div style={{ padding: "16px 26px", borderRadius: 20, background: "#fff", fontFamily: MARU, fontSize: 40, color: C.ink }}>{j}</div>
+                </div>
+              </Rise>
+            ))}
+          </div>}
+          {s.why && <Rise d={t.a + t.frames * 0.75} style={{ marginTop: 26 }}><div style={{ fontFamily: BN, fontSize: 32, color: "#FFE9B0", lineHeight: 1.4 }}>💡 {s.why}</div></Rise>}
+        </div>
+      </div>
+      <SFX at={6} name="chime" vol={0.3} />
     </AbsoluteFill>
   );
 };
@@ -620,7 +751,7 @@ const SReward: React.FC<P> = ({ s, spec }) => {
   );
 };
 
-const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, fix: SFix, context: SContext, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
+const MAP: Record<string, React.FC<P>> = { hook: SHook, title: STitle, learn: SLearn, speak: SSpeak, grammar: SGrammar, kana: SKana, recall: SRecall, fix: SFix, context: SContext, secret: SSecret, roleplay: SRole, quiz: SQuiz, mission: SMission, reward: SReward };
 const BIG = new Set(["title", "reward"]);
 
 /* ---------- chrome ---------- */
