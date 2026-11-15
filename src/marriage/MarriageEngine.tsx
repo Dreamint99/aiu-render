@@ -420,8 +420,8 @@ const SSignals: React.FC<P> = (p) => {
               <Fade key={i} at={a} style={{ flex: 1 }}>
                 <div style={{ height: "100%", borderRadius: 30, background: `linear-gradient(180deg, ${cl} 0%, ${K.paper} 75%)`, border: `3px solid ${c}`, padding: "30px 30px", boxShadow: `0 20px 50px ${c}${glow > 0.5 ? "40" : "10"}` }}>
                   <div style={{ width: 96, height: 96, borderRadius: 48, background: c, boxShadow: `0 0 ${40 * glow}px ${c}`, margin: "0 auto 20px" }} />
-                  <div style={{ fontFamily: BN, fontSize: 44, fontWeight: 700, color: c, textAlign: "center", marginBottom: 14 }}>{x.t}</div>
-                  <div style={{ fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.5, textAlign: "center" }}><Rich t={x.d} /></div>
+                  <div style={{ fontFamily: BN, fontSize: 54, fontWeight: 700, color: c, textAlign: "center", marginBottom: 14 }}>{x.t}</div>
+                  <div style={{ fontFamily: BN, fontSize: 40, color: K.ink, lineHeight: 1.5, textAlign: "center" }}><Rich t={x.d} /></div>
                 </div>
               </Fade>);
           })}
