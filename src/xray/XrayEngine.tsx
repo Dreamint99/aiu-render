@@ -813,10 +813,11 @@ const SPrice: React.FC<P> = (p) => {
         <div style={{ flex: 1.15, background: "#fff", borderRadius: 34, padding: "44px 52px", boxShadow: `0 40px 100px rgba(0,0,0,.5), 0 0 0 4px ${C.cyan}55`, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", right: -70, top: 40, transform: "rotate(35deg)", background: C.red, color: "#fff", fontFamily: BN, fontSize: 24, fontWeight: 800, padding: "8px 90px" }}>{p.s.badge || "বিশেষ মূল্য"}</div>
           <div style={{ fontFamily: BN, fontSize: 28, fontWeight: 700, color: C.mute, maxWidth: 560, lineHeight: 1.35 }}>{p.spec.course}</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 26, margin: "16px 0 6px" }}>
+          {!p.s.now && p.s.big && <div style={{ fontFamily: BN, fontSize: 84, fontWeight: 800, color: C.brand, lineHeight: 1.12, margin: "18px 0 10px", transform: `scale(${0.7 + 0.3 * o})`, transformOrigin: "left center", opacity: o }}>{p.s.big}</div>}
+          {p.s.now && <div style={{ display: "flex", alignItems: "baseline", gap: 26, margin: "16px 0 6px" }}>
             <span style={{ position: "relative", fontFamily: BN, fontSize: 64, fontWeight: 700, color: C.faint, opacity: fadeIn(f, at - 4) }}>{p.s.was}<span style={{ position: "absolute", left: -6, top: "52%", height: 6, width: `calc(${strike}% + 12px)`, background: C.red, borderRadius: 3, transform: "rotate(-8deg)" }} /></span>
             <span style={{ fontFamily: BN, fontSize: 150, fontWeight: 800, color: C.brand, lineHeight: 1, transform: `scale(${0.6 + 0.4 * o})`, transformOrigin: "left bottom", display: "inline-block", opacity: o }}>{p.s.now}</span>
-          </div>
+          </div>}
           {p.s.note && <div style={{ fontFamily: BN, fontSize: 26, color: C.ink2, marginBottom: 16 }}>{p.s.note}</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{perks.map((t, i) => <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", fontFamily: BN, fontSize: 28, color: C.ink, opacity: fadeIn(f, at + 30 + i * 10) }}><CheckCircle2 size={30} color={C.green} />{t}</div>)}</div>
         </div>
