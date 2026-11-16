@@ -453,7 +453,7 @@ const SUi: React.FC<P> = (p) => {
   const step = tStep.filter((t) => f >= t + 30).length - 1; // page changes right after the click
   const elOf = (id: string) => els.find((e) => e.id === id) || { x: UW / 2, y: UH / 2, w: 10, h: 10 } as UiEl;
   const keys = [{ t: 0, z: 1, cx: UW / 2, cy: UH / 2 }];
-  steps.forEach((q, i) => { const e = elOf(q.el); keys.push({ t: tStep[i], z: q.zoom || 1, cx: e.x + e.w / 2, cy: e.y + e.h / 2 }); });
+  steps.forEach((q, i) => { const e = elOf(q.el); keys.push({ t: tStep[i], z: Math.max(1, Math.min(q.zoom || 1, (UW * 0.96) / e.w, (UH * 0.9) / e.h)), cx: e.x + e.w / 2, cy: e.y + e.h / 2 }); });
   if (s.outAt) keys.push({ t: v(p, s.outAt), z: 1, cx: UW / 2, cy: UH / 2 });
   let k = 0; while (k < keys.length - 1 && f >= keys[k + 1].t) k++;
   const A = keys[k], B = keys[Math.min(k + 1, keys.length - 1)];
