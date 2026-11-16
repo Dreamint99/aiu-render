@@ -587,8 +587,56 @@ const SQuiz: React.FC<P & { answer?: boolean }> = (p) => {
   );
 };
 
+
+/* ---------------- keys (commands / shortcuts — no invented output) ---------------- */
+const SKeys: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const it: any[] = p.s.items || [];
+  return (
+    <Area>
+      <Kicker t={p.s.tag || "কমান্ড ও শর্টকাট"} c={C.teal} />
+      <H size={54} style={{ marginBottom: 26 }}>{p.s.head}</H>
+      <div style={{ display: "grid", gridTemplateColumns: it.length > 4 ? "1fr 1fr" : "1fr", gap: 18, flex: 1, alignContent: "center" }}>
+        {it.map(([k, d]: any, i: number) => { const at = v(p, 0.06 + (0.7 * i) / Math.max(1, it.length));
+          return (
+            <Glass key={i} style={{ display: "flex", alignItems: "center", gap: 24, padding: "18px 24px", opacity: io(f, at, at + 10), transform: `translateY(${io(f, at, at + 10, 18, 0)}px)` }}>
+              <div style={{ flex: "none", minWidth: it.length > 4 ? 250 : 330, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {String(k).split(" + ").map((kk: string, j: number) => <span key={j} style={{ fontFamily: MONO, fontSize: 30, fontWeight: 700, color: C.gold, background: "#16130F", border: `1.5px solid ${C.gold}66`, borderBottomWidth: 4, borderRadius: 12, padding: "6px 16px", boxShadow: `0 0 18px ${C.gold}22` }}>{kk}</span>)}
+              </div>
+              <div style={{ fontFamily: BN, fontSize: 30, color: C.ink, lineHeight: 1.4 }}>{d}</div>
+            </Glass>); })}
+      </div>
+      {p.s.note && <div style={{ fontFamily: BN, fontSize: 25, color: C.gold, marginTop: 14, opacity: io(f, v(p, 0.8), v(p, 0.8) + 10) }}>💡 {p.s.note}</div>}
+    </Area>
+  );
+};
+
+/* ---------------- steps (how to do it in an app / website) ---------------- */
+const SSteps: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const st: string[] = p.s.steps || [];
+  return (
+    <Area style={{ flexDirection: "row", gap: 46 }}>
+      <div style={{ flex: "none", width: 520, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <Kicker t={p.s.tag || "ধাপে ধাপে"} c={C.violet} />
+        <H size={54}>{p.s.head}</H>
+        {p.s.where && <div style={{ marginTop: 22, display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 12, fontFamily: BN, fontSize: 28, color: C.ink, padding: "10px 20px", borderRadius: 14, background: C.glass, border: `1px solid ${C.glassLine}` }}><Ico n={p.s.icon || "monitor"} size={30} color={C.violet} />{p.s.where}</div>}
+        {p.s.url && <div style={{ marginTop: 14, fontFamily: MONO, fontSize: 26, color: C.teal }}>{p.s.url}</div>}
+        {p.s.plans && <div style={{ marginTop: 18, fontFamily: BN, fontSize: 23, color: C.mute, lineHeight: 1.45 }}>{p.s.plans}</div>}
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16, position: "relative" }}>
+        <div style={{ position: "absolute", left: 31, top: 40, bottom: 40, width: 2, background: `linear-gradient(${C.violet}, transparent)` }} />
+        {st.map((t, i) => { const at = v(p, 0.08 + (0.72 * i) / Math.max(1, st.length)); const on = f >= at;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 22, opacity: io(f, at, at + 10, 0.15, 1), transform: `translateX(${io(f, at, at + 10, 24, 0)}px)` }}>
+              <span style={{ flex: "none", width: 64, height: 64, borderRadius: "50%", display: "grid", placeItems: "center", fontFamily: BN, fontSize: 30, fontWeight: 700, color: on ? "#120D1F" : C.violet, background: on ? C.violet : "#151220", border: `2px solid ${C.violet}`, boxShadow: on ? `0 0 26px ${C.violet}77` : "none", zIndex: 1 }}>{bn(i + 1)}</span>
+              <Glass style={{ flex: 1, padding: "16px 22px" }}><span style={{ fontFamily: BN, fontSize: 30, color: C.ink, lineHeight: 1.4 }}>{t}</span></Glass>
+            </div>); })}
+      </div>
+    </Area>
+  );
+};
+
 /* ---------------- frame ---------------- */
-const MAP: Record<string, React.FC<any>> = { myth: SMyth, title: STitle, points: SPoints, loop: SLoop, surfaces: SSurfaces, cost: SCost, compare: SCompare, hub: SHub, sessions: SSessions, secret: SSecret, thanks: SThanks, cli: SCli, browser: SBrowser, prompt: SPrompt, recap: SRecap, outro: SOutro, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer /> };
+const MAP: Record<string, React.FC<any>> = { myth: SMyth, title: STitle, points: SPoints, loop: SLoop, surfaces: SSurfaces, cost: SCost, compare: SCompare, hub: SHub, sessions: SSessions, secret: SSecret, thanks: SThanks, cli: SCli, browser: SBrowser, prompt: SPrompt, keys: SKeys, steps: SSteps, recap: SRecap, outro: SOutro, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer /> };
 const sfx = (s: Scene, i: number) => i === 0 ? "swell" : s.type === "secret" || s.type === "myth" ? "hit" : s.type === "recap" || s.type === "outro" || s.type === "quizA" || s.type === "thanks" ? "chime" : s.type === "cli" ? "pop" : "whoosh";
 
 const subChunks = (spec: Spec, starts: number[]) => spec.scenes.flatMap((s, i) => {
