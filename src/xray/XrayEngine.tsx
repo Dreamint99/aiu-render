@@ -1,4 +1,4 @@
-// AI University — "চলো প্রোগ্রামিং বুঝি — কোড না লিখেও" lesson engine (2026-11-16).
+// AI University — "চলো প্রোগ্রামিং শিখি — কোড না লিখে (সুপার সিক্রেট কোর্স)" lesson engine (2026-11-16).
 // Look: a clean, light "tech classroom" (paper-white board, soft dot grid, navy ink, brand blue) for concepts, and a dark
 // blueprint "X-RAY" mode when the camera dives inside an app: phone/laptop mockups drawn in code, server/database/cloud nodes,
 // request/response packets flying along the links, a live database table that gains rows, a server whose functions light up,
@@ -493,7 +493,7 @@ const SCards: React.FC<P> = (p) => {
         {cards.map((c, i) => { const col = METHOD[c.badge] || (C as any)[c.c] || C.brand; const at = p.s.cues ? cueAt(p, p.s.cues[i], 0.1) : v(p, 0.1 + i * 0.18); const o = fadeIn(f, at, 12); return (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 14, padding: "26px 22px", borderRadius: 22, background: `${col}0C`, border: `2px solid ${col}55`, opacity: o, transform: `translateY(${(1 - o) * 30}px)` }}>
             <span style={{ alignSelf: "flex-start", fontFamily: MONO, fontSize: 32, fontWeight: 800, color: "#fff", background: col, borderRadius: 12, padding: "6px 18px" }}>{c.badge}</span>
-            <div style={{ fontFamily: BN, fontSize: 46, fontWeight: 800, color: C.ink }}>{c.title}</div>
+            <div style={{ fontFamily: BN, fontSize: cards.length > 4 ? 32 : 46, fontWeight: 800, color: C.ink, lineHeight: 1.25 }}>{c.title}</div>
             <div style={{ fontFamily: BN, fontSize: 30, color: C.ink2, lineHeight: 1.45, flex: 1 }}>{c.desc}</div>
             {c.ex && <div style={{ fontFamily: MONO, fontSize: 21, color: C.cInk, background: C.code, borderRadius: 10, padding: "10px 12px", whiteSpace: "nowrap", overflow: "hidden" }}>{hl(c.ex)}</div>}
           </div>); })}
@@ -746,8 +746,93 @@ const SOutro: React.FC<P> = (p) => {
   );
 };
 
+
+/* ---------------- PROMO scenes (course promo in the x-ray style) ---------------- */
+// promoHook: dark blueprint, big kinetic lines appear one by one, a scan beam sweeps; {"lines":[{"t","c"?,"big"?,"cue"}], "tag"?}
+const SPromoHook: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const lines: any[] = p.s.lines || [];
+  return (
+    <AbsoluteFill>
+      <XBg o={1} />
+      <div style={{ position: "absolute", left: 0, right: 0, top: interpolate(f % 120, [0, 120], [-40, 1100]), height: 4, background: C.cyan, boxShadow: `0 0 50px 14px ${C.cyan}`, opacity: 0.35 }} />
+      <AbsoluteFill style={{ padding: "0 170px 160px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
+        {p.s.tag && <div style={{ fontFamily: MONO, fontSize: 26, color: C.cyan, letterSpacing: 3, opacity: fadeIn(f, 2) }}>◉ {p.s.tag}</div>}
+        {lines.map((l, i) => { const at = cueAt(p, l.cue, 0.05 + i * 0.22); const o = Math.min(1, pop(f, fps, Math.round(at))); const col = l.c ? (C as any)[l.c] || l.c : C.xink; return (
+          <div key={i} style={{ fontFamily: BN, fontSize: l.big ? 104 : 72, fontWeight: 800, color: col, lineHeight: 1.15, opacity: o, transform: `translateY(${(1 - o) * 40}px)`, textShadow: l.c ? `0 0 40px ${col}66` : undefined }}>{l.t}</div>); })}
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+// modules: wall of module tiles lighting up in turn; {"head","mods":[{"n","t","icon"}],"cue"?}
+const SModules: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const mods: any[] = p.s.mods || [];
+  const start = cueAt(p, p.s.cue, 0.06); const span = Math.max(30, v(p, 0.85) - start);
+  const cols = mods.length > 9 ? 5 : 4;
+  return (
+    <AbsoluteFill>
+      <XBg o={1} />
+      <AbsoluteFill style={{ padding: "56px 90px 150px", display: "flex", flexDirection: "column" }}>
+        <div style={{ fontFamily: MONO, fontSize: 24, color: C.cyan, letterSpacing: 3, marginBottom: 8 }}>◉ COURSE MAP</div>
+        <div style={{ fontFamily: BN, fontSize: 54, fontWeight: 800, color: C.xink, marginBottom: 22 }}>{p.s.head}</div>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16, flex: 1, alignContent: "start" }}>
+          {mods.map((m, i) => { const at = start + (span * i) / mods.length; const o = fadeIn(f, at, 10); const I = ICO[m.icon] || Code2; const hot = f >= at && f < at + span / mods.length + 6; return (
+            <div key={i} style={{ padding: "18px 18px", borderRadius: 18, background: hot ? "rgba(92,225,255,.16)" : "rgba(10,32,72,.8)", border: `2px solid ${hot ? C.cyan : C.xline}`, boxShadow: hot ? `0 0 40px ${C.cyan}66` : "none", opacity: 0.25 + 0.75 * o, transform: `scale(${0.94 + 0.06 * o})`, display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <span style={{ flex: "none", width: 50, height: 50, borderRadius: 14, background: hot ? C.cyan : "#0E2C5E", display: "grid", placeItems: "center" }}><I size={26} color={hot ? C.xb0 : C.cyan} /></span>
+              <div><div style={{ fontFamily: MONO, fontSize: 17, color: C.xmute }}>MODULE {String(m.n).padStart(2, "0")}</div><div style={{ fontFamily: BN, fontSize: 26, fontWeight: 700, color: C.xink, lineHeight: 1.3 }}>{m.t}</div></div>
+            </div>); })}
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+// inside: what the course includes — big value tiles; {"tag"?,"head","items":[{"k","t","d"?,"icon","c","cue"}]}
+const SInside: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const it: any[] = p.s.items || [];
+  return (
+    <Card style={{ padding: "44px 56px" }}>
+      <Eyebrow t={p.s.tag || "কোর্সে যা যা পাবেন"} c={C.brand} icon="box" />
+      <Head t={p.s.head} size={50} />
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${it.length > 4 ? 3 : 2}, 1fr)`, gap: 18, flex: 1 }}>
+        {it.map((x, i) => { const at = cueAt(p, x.cue, 0.08 + i * 0.13); const o = Math.min(1, pop(f, fps, Math.round(at))); const col = (C as any)[x.c] || C.brand; const I = ICO[x.icon] || CheckCircle2; return (
+          <div key={i} style={{ borderRadius: 22, background: `${col}0D`, border: `2px solid ${col}45`, padding: "20px 22px", display: "flex", gap: 18, alignItems: "center", opacity: o, transform: `scale(${0.9 + 0.1 * o})` }}>
+            <span style={{ flex: "none", width: 70, height: 70, borderRadius: 20, background: col, display: "grid", placeItems: "center", boxShadow: `0 12px 26px ${col}55` }}><I size={36} color="#fff" /></span>
+            <div><div style={{ fontFamily: BN, fontSize: 40, fontWeight: 800, color: col, lineHeight: 1.1 }}>{x.k}</div><div style={{ fontFamily: BN, fontSize: 27, fontWeight: 700, color: C.ink, lineHeight: 1.3 }}>{x.t}</div>{x.d && <div style={{ fontFamily: BN, fontSize: 21, color: C.mute, lineHeight: 1.35 }}>{x.d}</div>}</div>
+          </div>); })}
+      </div>
+    </Card>
+  );
+};
+// price: ticket card with the struck regular price; {"was","now","badge"?,"note"?,"perks":[…],"cta","url","sub"?,"priceCue"}
+const SPrice: React.FC<P> = (p) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig(); const at = cueAt(p, p.s.priceCue, 0.15); const perks: string[] = p.s.perks || [];
+  const strike = interpolate(f, [at + 10, at + 24], [0, 100], clamp); const o = Math.min(1, pop(f, fps, Math.round(at + 22)));
+  return (
+    <AbsoluteFill>
+      <XBg o={1} />
+      <AbsoluteFill style={{ padding: "60px 120px 160px", display: "flex", flexDirection: "row", alignItems: "center", gap: 64 }}>
+        <div style={{ flex: 1.15, background: "#fff", borderRadius: 34, padding: "44px 52px", boxShadow: `0 40px 100px rgba(0,0,0,.5), 0 0 0 4px ${C.cyan}55`, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", right: -70, top: 40, transform: "rotate(35deg)", background: C.red, color: "#fff", fontFamily: BN, fontSize: 24, fontWeight: 800, padding: "8px 90px" }}>{p.s.badge || "বিশেষ মূল্য"}</div>
+          <div style={{ fontFamily: BN, fontSize: 28, fontWeight: 700, color: C.mute, maxWidth: 560, lineHeight: 1.35 }}>{p.spec.course}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 26, margin: "16px 0 6px" }}>
+            <span style={{ position: "relative", fontFamily: BN, fontSize: 64, fontWeight: 700, color: C.faint, opacity: fadeIn(f, at - 4) }}>{p.s.was}<span style={{ position: "absolute", left: -6, top: "52%", height: 6, width: `calc(${strike}% + 12px)`, background: C.red, borderRadius: 3, transform: "rotate(-8deg)" }} /></span>
+            <span style={{ fontFamily: BN, fontSize: 150, fontWeight: 800, color: C.brand, lineHeight: 1, transform: `scale(${0.6 + 0.4 * o})`, transformOrigin: "left bottom", display: "inline-block", opacity: o }}>{p.s.now}</span>
+          </div>
+          {p.s.note && <div style={{ fontFamily: BN, fontSize: 26, color: C.ink2, marginBottom: 16 }}>{p.s.note}</div>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{perks.map((t, i) => <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", fontFamily: BN, fontSize: 28, color: C.ink, opacity: fadeIn(f, at + 30 + i * 10) }}><CheckCircle2 size={30} color={C.green} />{t}</div>)}</div>
+        </div>
+        <div style={{ flex: 0.85, display: "flex", flexDirection: "column", gap: 26, alignItems: "flex-start" }}>
+          <Img src={staticFile("academy/_brand/aiu-logo-dark.svg")} style={{ height: 80, opacity: fadeIn(f, 6) }} />
+          <div style={{ fontFamily: BN, fontSize: 56, fontWeight: 800, color: C.xink, lineHeight: 1.2, opacity: fadeIn(f, 12) }}>{p.s.cta}</div>
+          <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: "#04122E", background: C.cyan, borderRadius: 16, padding: "12px 26px", boxShadow: `0 0 50px ${C.cyan}88`, transform: `scale(${1 + 0.03 * Math.sin(f / 6)})`, opacity: fadeIn(f, 20) }}>{p.s.url}</div>
+          {p.s.sub && <div style={{ fontFamily: BN, fontSize: 26, color: C.xmute, lineHeight: 1.45, opacity: fadeIn(f, 28) }}>{p.s.sub}</div>}
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 /* ---------------- frame ---------------- */
-const MAP: Record<string, React.FC<any>> = { troll: STroll, title: STitle, points: SPoints, xray: SXray, code: SCode, cards: SCards, status: SStatus, table: STable, layers: SLayers, phones: SPhones, map: SMap, fare: SFare, scale: SScale, prompt: SPrompt, recap: SRecap, outro: SOutro };
+const MAP: Record<string, React.FC<any>> = { troll: STroll, title: STitle, points: SPoints, xray: SXray, code: SCode, cards: SCards, status: SStatus, table: STable, layers: SLayers, phones: SPhones, map: SMap, fare: SFare, scale: SScale, prompt: SPrompt, recap: SRecap, outro: SOutro, promoHook: SPromoHook, modules: SModules, inside: SInside, price: SPrice };
 const subChunks = (spec: Spec, starts: number[]) => spec.scenes.flatMap((s, i) => {
   const parts = s.vo.split(/(?<=[।?!,—])\s+/).reduce<string[]>((a, x) => { if (a.length && (a[a.length - 1].length < 26 || x.length < 10)) a[a.length - 1] += " " + x; else a.push(x); return a; }, []);
   const total = parts.reduce((n, x) => n + x.length, 0) || 1; let acc = 0; const b = starts[i] + LEAD;
@@ -763,7 +848,7 @@ export const XrayVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
   const starts = lens.reduce<number[]>((a, _, i) => [...a, i ? a[i - 1] + lens[i - 1] : 15], []);
   const chunks = subChunks(spec, starts), cur = chunks.find((x) => f >= x.from && f < x.to + 4);
   const total = xrayLen(spec);
-  const inX = spec.scenes.some((s, i) => s.type === "xray" && f >= starts[i] + 20 && f < starts[i] + lens[i] - 6);
+  const inX = spec.scenes.some((s, i) => ["xray", "promoHook", "modules", "price"].includes(s.type) && f >= starts[i] + 20 && f < starts[i] + lens[i] - 6);
   return (
     <AbsoluteFill style={{ background: C.paper }}>
       <Board />

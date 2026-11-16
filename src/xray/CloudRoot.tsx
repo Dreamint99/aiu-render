@@ -1,4 +1,4 @@
-// Cloud render entry for "চলো প্রোগ্রামিং বুঝি" lesson videos (Dreamint99/aiu-render): the spec arrives as --props, the repo holds only the engine.
+// Cloud render entry for "চলো প্রোগ্রামিং শিখি" lesson videos (Dreamint99/aiu-render): the spec arrives as --props, the repo holds only the engine.
 import React from "react";
 import { Composition } from "remotion";
 import { XrayVideo, xrayLen, Spec } from "./XrayEngine";
