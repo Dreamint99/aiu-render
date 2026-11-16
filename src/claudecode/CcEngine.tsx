@@ -208,7 +208,7 @@ const Mini: React.FC<{ k: string; f: number }> = ({ k, f }) => {
   );
   const type = (s: string, at: number) => s.slice(0, Math.max(0, Math.floor((f - at) / 2)));
   if (k === "terminal") return (<>{bar("~/my-shop")}<div style={{ padding: 16, fontFamily: MONO, fontSize: 19, color: C.ink, lineHeight: 1.6 }}><span style={{ color: C.teal }}>$ </span>{type("claude", 10)}<br /><span style={{ color: C.clay }}>✻ </span><span style={{ color: C.mute }}>{f > 30 ? "স্বাগতম! কী বানাবো?" : ""}</span><br /><span style={{ color: C.faint }}>&gt; </span>{type("একটা ওয়েবসাইট বানাও", 40)}</div></>);
-  if (k === "desktop") return (<>{bar("ডেস্কটপ অ্যাপ")}<div style={{ display: "flex", height: 226 }}><div style={{ width: 90, background: "#141215", borderRight: `1px solid ${C.line}`, padding: 10 }}>{[0, 1, 2, 3].map((i) => <div key={i} style={{ height: 14, borderRadius: 5, background: i === 0 ? `${C.clay}88` : "#2A2528", marginBottom: 10 }} />)}</div><div style={{ flex: 1, padding: 14 }}><div style={{ marginLeft: "auto", width: "70%", background: "#2A2226", borderRadius: 12, padding: "8px 12px", fontFamily: BN, fontSize: 17, color: C.ink }}>লগইন পেজ ঠিক করো</div><div style={{ marginTop: 12, width: "80%", background: "#1A1719", border: `1px solid ${C.line}`, borderRadius: 12, padding: "8px 12px", fontFamily: MONO, fontSize: 14, color: C.teal }}>⏺ Edit(login.js) ✓</div><div style={{ marginTop: 10, width: "56%", height: 12, borderRadius: 6, background: "#2A2528" }} /></div></div></>);
+  if (k === "desktop") return (<>{bar("ডেস্কটপ অ্যাপ")}<div style={{ display: "flex", height: 226 }}><div style={{ width: 90, background: "#141215", borderRight: `1px solid ${C.line}`, padding: 10 }}>{[0, 1, 2, 3].map((i) => <div key={i} style={{ height: 14, borderRadius: 5, background: i === 0 ? `${C.clay}88` : "#2A2528", marginBottom: 10 }} />)}</div><div style={{ flex: 1, padding: 14 }}><div style={{ marginLeft: "auto", width: "70%", background: "#2A2226", borderRadius: 12, padding: "8px 12px", fontFamily: BN, fontSize: 17, color: C.ink }}>লগইন পেজ ঠিক করো</div><div style={{ marginTop: 12, width: "80%", background: "#1A1719", border: `1px solid ${C.line}`, borderRadius: 12, padding: "8px 12px", fontFamily: MONO, fontSize: 14, color: C.teal }}>● Edit(login.js) ✓</div><div style={{ marginTop: 10, width: "56%", height: 12, borderRadius: 6, background: "#2A2528" }} /></div></div></>);
   if (k === "web") return (<>{bar("claude.ai/code", true)}<div style={{ background: "#F7F3EE", height: 226, padding: 16 }}><div style={{ fontFamily: BN, fontSize: 19, color: "#3A332D", fontWeight: 700 }}>ব্রাউজারেই কাজ</div><div style={{ marginTop: 10, display: "flex", gap: 8 }}>{["রিপো", "টাস্ক", "PR"].map((x, i) => <span key={i} style={{ fontFamily: BN, fontSize: 15, padding: "4px 12px", borderRadius: 8, background: i === 1 ? "#E8865E33" : "#E7E0D8", color: "#5A4F46" }}>{x}</span>)}</div><div style={{ marginTop: 14, height: 70, borderRadius: 10, background: "#fff", border: "1px solid #E1D9CF", padding: 10, fontFamily: MONO, fontSize: 13, color: "#7A6F65" }}>cloud session · running…<div style={{ marginTop: 8, height: 8, borderRadius: 4, background: "#EADFD3" }}><div style={{ width: `${Math.min(100, (f % 90) * 1.3)}%`, height: 8, borderRadius: 4, background: C.clay }} /></div></div></div></>);
   return (<>{bar("VS Code")}<div style={{ display: "flex", height: 226 }}><div style={{ flex: 1.4, padding: 12, fontFamily: MONO, fontSize: 14, lineHeight: 1.7, color: C.mute }}><div><span style={{ color: C.violet }}>function</span> <span style={{ color: C.blue }}>pay</span>() {"{"}</div><div style={{ background: "rgba(98,217,139,.12)", color: C.green }}>+  verify(trx)</div><div style={{ background: "rgba(255,111,111,.12)", color: C.red }}>-  return ok</div><div>{"}"}</div></div><div style={{ flex: 1, borderLeft: `1px solid ${C.line}`, padding: 10, background: "#121013" }}><div style={{ fontFamily: BN, fontSize: 14, color: C.clay, marginBottom: 6 }}>Claude প্যানেল</div><div style={{ fontFamily: BN, fontSize: 14, color: C.ink, background: "#221D20", borderRadius: 8, padding: 6 }}>এই বাগটা কেন?</div></div></div></>);
 };
@@ -337,7 +337,7 @@ const SSessions: React.FC<P> = (p) => {
               </div>
               <div style={{ padding: "10px 14px", fontFamily: MONO, fontSize: 16, lineHeight: 1.6, color: C.mute, flex: 1 }}>
                 <div style={{ fontFamily: BN, fontSize: 19, color: C.gold, marginBottom: 4 }}>{s.task}</div>
-                {logs.slice(0, shown).map((l, j) => <div key={j}><span style={{ color: C.teal }}>⏺ </span>{l}</div>)}
+                {logs.slice(0, shown).map((l, j) => <div key={j}><span style={{ color: C.teal }}>● </span>{l}</div>)}
               </div>
             </div>); })}
       </div>
@@ -445,9 +445,9 @@ const SCli: React.FC<P> = (p) => {
     if (e.k === "tool") { const done = f > r.a + (r.b - r.a) * 0.55;
       return (
         <div key={i} style={{ marginTop: 12, opacity: io(f, r.a, r.a + 6), transform: `translateX(${io(f, r.a, r.a + 6, -16, 0)}px)` }}>
-          <div><span style={{ color: done ? C.green : C.ink, opacity: done ? 1 : caret ? 1 : 0.3 }}>⏺ </span><span style={{ color: C.ink, fontWeight: 700 }}>{e.name}</span><span style={{ color: C.mute }}>({e.arg})</span>
+          <div><span style={{ color: done ? C.green : C.ink, opacity: done ? 1 : caret ? 1 : 0.3 }}>● </span><span style={{ color: C.ink, fontWeight: 700 }}>{e.name}</span><span style={{ color: C.mute }}>({e.arg})</span>
             {e.label && <span style={{ marginLeft: 16, fontFamily: BN, fontSize: 21, padding: "2px 12px", borderRadius: 8, background: `${C.teal}22`, color: C.teal }}>{e.label}</span>}</div>
-          {done && <div style={{ color: C.mute, paddingLeft: 28 }}>⎿  <span style={{ fontFamily: /[\u0980-\u09FF]/.test(e.res || "") ? BN : MONO }}>{e.res}</span></div>}
+          {done && <div style={{ color: C.mute, paddingLeft: 28 }}>└  <span style={{ fontFamily: /[\u0980-\u09FF]/.test(e.res || "") ? BN : MONO }}>{e.res}</span></div>}
         </div>); }
     if (e.k === "diff") { const ln: any[] = e.lines || []; const nShow = Math.ceil(ln.length * interpolate(f, [r.a + 4, r.b - 6], [0, 1], clamp));
       return (
@@ -458,7 +458,7 @@ const SCli: React.FC<P> = (p) => {
             <span style={{ whiteSpace: "pre", color: x.t === "add" ? "#BFF5D1" : x.t === "del" ? "#FFC9C9" : C.mute }}>{x.s}</span></div>)}
         </div>); }
     if (e.k === "text") { const s = e.s || ""; const n = Math.round(s.length * interpolate(f, [r.a, r.a + (r.b - r.a) * 0.85], [0, 1], clamp));
-      return <div key={i} style={{ marginTop: 14, display: "flex", gap: 10 }}><span style={{ color: C.ink }}>⏺</span><span style={{ fontFamily: BN, color: C.ink, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{s.slice(0, n)}</span></div>; }
+      return <div key={i} style={{ marginTop: 14, display: "flex", gap: 10 }}><span style={{ color: C.ink }}>●</span><span style={{ fontFamily: BN, color: C.ink, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{s.slice(0, n)}</span></div>; }
     if (e.k === "cost") return <div key={i} style={{ marginTop: 14, color: C.gold, fontFamily: BN, fontSize: 23, opacity: io(f, r.a, r.a + 8) }}>{e.s}</div>;
     if (e.k === "perm") return <div key={i} style={{ marginTop: 6 }} />;
     return null;
