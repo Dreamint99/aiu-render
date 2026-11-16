@@ -817,7 +817,7 @@ const SRecap: React.FC<P> = (p) => (
 const SOutro: React.FC<P> = (p) => (
   <Box style={{ justifyContent: "center", alignItems: "center", textAlign: "center" }}>
     <Pop at={4}><Img src={img("_brand/aiu-logo-dark.svg")} style={{ height: 96 }} /></Pop>
-    <Fade at={16}><div style={{ fontFamily: BN, fontSize: 30, color: "rgba(230,236,255,.7)", marginTop: 40 }}>পরের পাঠ</div><div style={{ fontFamily: BN, fontSize: 60, fontWeight: 700, color: "#fff", marginTop: 8 }}>{p.spec.next}</div></Fade>
+    <Fade at={16}><div style={{ fontFamily: BN, fontSize: 30, color: "rgba(230,236,255,.7)", marginTop: 40 }}>{p.s.label || "পরের পাঠ"}</div><div style={{ fontFamily: BN, fontSize: 60, fontWeight: 700, color: "#fff", marginTop: 8 }}>{p.s.big || p.spec.next}</div></Fade>
     <Fade at={34}><div style={{ fontFamily: BN, fontSize: 30, color: "rgba(230,236,255,.7)", marginTop: 44, maxWidth: 1300, lineHeight: 1.5 }}>{p.s.note || "আগে নিয়ম বুঝুন, তারপর এআই-কে কাজ বুঝিয়ে দিন।"}<br /><span style={{ color: "#fff", fontWeight: 700 }}>aiuniversitybd.com</span></div></Fade>
   </Box>
 );
