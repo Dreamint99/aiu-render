@@ -15,8 +15,17 @@ const K = {
   navy: "#011835", royal: "#0050ED", caret: "#FF5A1F", green: "#12A06B", red: "#E5484D", amber: "#E8920C", violet: "#7C5CFC", pink: "#E8458B", teal: "#0EA5A5", sel: "#2F7BFF",
 };
 const BN = "Anek", EN = "Manrope";
+// fonts the typography scenes may show (all free / open licence, in public/fonts)
+export const FONTS: Record<string, { file: string; family: string; kind: string }> = {
+  "Noto Serif Bengali": { file: "NotoSerifBengali.ttf", family: "GDNotoSerifBn", kind: "serif" }, "Tiro Bangla": { file: "TiroBangla-Regular.ttf", family: "GDTiro", kind: "serif" },
+  "Hind Siliguri": { file: "HindSiliguri-Bold.ttf", family: "GDHind", kind: "sans" }, "Anek Bangla": { file: "AnekBangla.ttf", family: "Anek", kind: "sans" },
+  "Galada": { file: "Galada-Regular.ttf", family: "GDGalada", kind: "display" }, "Atma": { file: "Atma-Bold.ttf", family: "GDAtma", kind: "display" }, "Baloo Da 2": { file: "BalooDa2.ttf", family: "GDBaloo", kind: "display" },
+  "Montserrat": { file: "Montserrat.ttf", family: "GDMont", kind: "sans" }, "Manrope": { file: "Manrope-700.ttf", family: "Manrope", kind: "sans" }, "Anton": { file: "Anton-Regular.ttf", family: "GDAnton", kind: "display" },
+  "Bebas Neue": { file: "BebasNeue-Regular.ttf", family: "GDBebas", kind: "display" }, "JetBrains Mono": { file: "JetBrainsMono-Regular.ttf", family: "GDMono", kind: "mono" },
+};
+const FONT_FILES = Object.values(FONTS).filter((x) => !["Anek", "Manrope"].includes(x.family)).map((x) => [x.family, `fonts/${x.file}`, "100 900"]);
 if (typeof document !== "undefined") {
-  for (const [n, u, w] of [["Anek", "fonts/AnekBangla.ttf", "100 900"], ["Manrope", "fonts/Manrope-700.ttf", "700"], ["Manrope", "fonts/Manrope-500.ttf", "500"]]) {
+  for (const [n, u, w] of [["Anek", "fonts/AnekBangla.ttf", "100 900"], ["Manrope", "fonts/Manrope-700.ttf", "700"], ["Manrope", "fonts/Manrope-500.ttf", "500"], ...FONT_FILES]) {
     const h = delayRender(`font ${n}${w}`);
     const f = new FontFace(n, `url(${staticFile(u)})`, { weight: w });
     f.load().then(() => { document.fonts.add(f); continueRender(h); }).catch(() => continueRender(h));
@@ -262,7 +271,7 @@ const SPrompt: React.FC<P> = (p) => {
   return (
     <Box>
       <Head t={p.s.head} kicker={p.s.kicker} />
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: parts.length > 5 ? 10 : 14, opacity: interpolate(f, [snap - 4, snap + 8], [1, 0], clamp), position: "absolute", top: 120, left: 0, right: 0 }}>
         {parts.map((x, i) => {
           const k = pop(f, fps, at(i)); const c = COL[x.c] || K.royal;
           return (
@@ -274,10 +283,10 @@ const SPrompt: React.FC<P> = (p) => {
           );
         })}
       </div>
-      <Fade at={snap} style={{ marginTop: 26 }}>
-        <Card style={{ padding: "20px 28px", display: "flex", gap: 18, alignItems: "flex-start" }}>
-          <div style={{ flex: "none", fontFamily: BN, fontSize: 24, fontWeight: 700, color: K.caret, paddingTop: 4 }}>পুরো প্রম্পট</div>
-          <div style={{ fontFamily: EN, fontSize: 23, lineHeight: 1.5, fontWeight: 500 }}>
+      <Fade at={snap} style={{ position: "absolute", top: 150, left: 0, right: 0 }}>
+        <Card style={{ padding: "34px 40px" }}>
+          <div style={{ fontFamily: BN, fontSize: 30, fontWeight: 700, color: K.caret, marginBottom: 14 }}>পুরো প্রম্পট — অংশগুলো জোড়া লাগল</div>
+          <div style={{ fontFamily: EN, fontSize: parts.map((x) => x.en).join(", ").length > 380 ? 32 : 38, lineHeight: 1.55, fontWeight: 500 }}>
             {parts.map((x, i) => <span key={i} style={{ color: COL[x.c] || K.royal, background: `${COL[x.c] || K.royal}12`, borderRadius: 6, padding: "1px 4px", marginRight: 6 }}>{x.en}{i < parts.length - 1 ? "," : ""}</span>)}
           </div>
         </Card>
@@ -424,20 +433,20 @@ const STransparent: React.FC<P> = (p) => {
 
 /* ---------- platform size frames ---------- */
 const SSizes: React.FC<P> = (p) => {
-  const fr: { w: number; h: number; l: string }[] = p.s.boards || [];
-  const k = 0.3;
+  const fr: { w: number; h: number; l: string; tag?: string }[] = p.s.boards || [];
+  const kk = (x: { w: number; h: number }) => Math.min(0.3, 560 / x.h, 560 / x.w);
   return (
     <Box>
       <Head t={p.s.head} kicker={p.s.kicker} />
       <div style={{ display: "flex", gap: 60, alignItems: "flex-end", marginTop: 40 }}>
         {fr.map((x, i) => (
           <Pop key={i} at={v(p, 0.1 + (0.6 * i) / fr.length)}>
-            <Artboard label={`${x.w} × ${x.h}`} sel style={{ width: x.w * k * (x.h > 1500 ? 0.85 : 1), height: x.h * k * (x.h > 1500 ? 0.85 : 1) }}>
+            <Artboard label={x.tag || `${x.w} × ${x.h}`} sel style={{ width: x.w * kk(x), height: x.h * kk(x) }}>
               <div style={{ position: "absolute", inset: 0, background: `linear-gradient(160deg, #FFF4E0, #FDE3C7)` }} />
-              {p.s.img && <Img src={img(p.s.img)} style={{ position: "absolute", left: "50%", top: "42%", height: Math.min(x.w, x.h) * k * 0.5, transform: "translate(-50%,-50%)" }} />}
+              {p.s.img && <Img src={img(p.s.img)} style={{ position: "absolute", left: "50%", top: "42%", height: Math.min(x.w, x.h) * kk(x) * 0.5, transform: "translate(-50%,-50%)" }} />}
               <div style={{ position: "absolute", left: 0, right: 0, bottom: 14, textAlign: "center", fontFamily: EN, fontSize: 22, fontWeight: 700, color: "#3B2A20" }}>{p.s.brand || ""}</div>
             </Artboard>
-            <div style={{ fontFamily: BN, fontSize: 27, fontWeight: 700, color: K.ink, marginTop: 14, maxWidth: x.w * k + 60 }}>{x.l}</div>
+            <div style={{ fontFamily: BN, fontSize: 27, fontWeight: 700, color: K.ink, marginTop: 14, maxWidth: x.w * kk(x) + 60 }}>{x.l}</div>
           </Pop>
         ))}
       </div>
@@ -560,7 +569,7 @@ const SPalette: React.FC<P> = (p) => {
       {p.s.img && <Pop at={showPoster} style={{ flex: "none" }}>
         <Artboard label="পোস্টার · ১০৮০ × ১৫৮০" sel style={{ width: 470, height: 690 }}>
           <Img src={img(p.s.img)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          <Fade at={showPoster + 20} style={{ position: "absolute", left: 34, right: 34, top: 50 }}>
+          <Fade at={showPoster + 20} style={{ position: "absolute", left: 22, right: 22, top: 30, background: "rgba(255,250,240,.88)", borderRadius: 14, padding: "14px 16px" }}>
             <div style={{ fontFamily: EN, fontSize: 26, fontWeight: 700, color: p.s.brandColor || "#1F6B4F", letterSpacing: 3 }}>{p.s.brand}</div>
             <div style={{ fontFamily: BN, fontSize: 52, fontWeight: 800, color: p.s.headColor || "#3B2A20", lineHeight: 1.12, marginTop: 6 }}>{p.s.headline}</div>
             <div style={{ display: "inline-block", marginTop: 16, fontFamily: BN, fontSize: 24, fontWeight: 700, color: "#fff", background: p.s.ctaColor || "#1F6B4F", padding: "6px 18px", borderRadius: 10 }}>{p.s.cta}</div>
@@ -639,6 +648,128 @@ const SPost: React.FC<P> = (p) => {
   );
 };
 
+/* ---------- typography specimens (real font files) ---------- */
+const SFonts: React.FC<P> = (p) => {
+  const it: { font: string; t: string; n: string; d: string; size?: number }[] = p.s.items || [];
+  return (
+    <Box>
+      <Head t={p.s.head} kicker={p.s.kicker} />
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${it.length > 4 ? 3 : 2}, 1fr)`, gap: "44px 24px" }}>
+        {it.map((x, i) => { const F = FONTS[x.font] || FONTS["Anek Bangla"];
+          return (
+            <Pop key={i} at={v(p, 0.06 + (0.74 * i) / it.length)}>
+              <Artboard label={`${x.font} · ${x.n}`} style={{ height: it.length > 4 ? 240 : 270 }}>
+                <div style={{ height: "60%", display: "grid", placeItems: "center", padding: "0 24px", textAlign: "center", fontFamily: F.family, fontSize: Math.max(x.size || 60, 50), color: K.ink, lineHeight: 1.2 }}>{x.t}</div>
+                <div style={{ padding: "0 24px", fontFamily: BN, fontSize: 25, color: K.ink2, lineHeight: 1.38 }}><Rich t={x.d} /></div>
+              </Artboard>
+            </Pop>
+          ); })}
+      </div>
+      {p.s.foot && <Fade at={v(p, 0.84)} style={{ marginTop: 22, fontFamily: BN, fontSize: 26, color: K.ink2 }}><Rich t={p.s.foot} /></Fade>}
+    </Box>
+  );
+};
+
+/* ---------- layout: the same content laid out badly vs well (blocks in % of a portrait artboard) ---------- */
+type Blk = { k: string; x: number; y: number; w: number; h: number; t?: string; c?: string; font?: string; size?: number; align?: string };
+const Block: React.FC<{ b: Blk; W: number; H: number }> = ({ b, W, H }) => {
+  const fs = (n: number) => (n * W) / 400;
+  const st: React.CSSProperties = { position: "absolute", left: (b.x / 100) * W, top: (b.y / 100) * H, width: (b.w / 100) * W, height: (b.h / 100) * H, display: "flex", alignItems: "center", justifyContent: b.align === "center" ? "center" : b.align === "right" ? "flex-end" : "flex-start", textAlign: (b.align as any) || "left", overflow: "hidden" };
+  const c = b.c || K.ink; const F = b.font && FONTS[b.font] ? FONTS[b.font].family : BN;
+  if (b.k === "img") return <div style={{ ...st, borderRadius: 10, background: `linear-gradient(135deg, ${c}55, ${c}22)` }}><svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet" style={{ opacity: 0.55 }}><circle cx="70" cy="18" r="7" fill={c} /><path d="M5 55l25-25 15 15 12-10 30 20z" fill={c} /></svg></div>;
+  if (b.k === "btn") return <div style={st}><div style={{ background: c, color: "#fff", fontFamily: F, fontWeight: 700, fontSize: fs(b.size || 18), padding: "6px 16px", borderRadius: 10, whiteSpace: "nowrap" }}>{b.t}</div></div>;
+  if (b.k === "shape") return <div style={{ ...st, background: c, borderRadius: 8 }} />;
+  if (b.k === "logo") return <div style={{ ...st, gap: 6 }}><div style={{ width: (b.h / 100) * H * 0.8, height: (b.h / 100) * H * 0.8, borderRadius: 999, background: c, flex: "none" }} /><span style={{ fontFamily: EN, fontWeight: 700, fontSize: fs(b.size || 16), color: K.ink }}>{b.t}</span></div>;
+  return <div style={{ ...st, fontFamily: F, fontWeight: b.k === "head" ? 800 : 500, fontSize: fs(b.size || (b.k === "head" ? 34 : 16)), color: c, lineHeight: 1.18 }}>{b.t}</div>;
+};
+const SLayout: React.FC<P> = (p) => {
+  const f = useCurrentFrame();
+  const ar = (p.s.w || 4) / (p.s.h || 5); const W = Math.min(640 * ar, 560), H = W / ar;
+  const gAt = p.s.gridAt || 0.62;
+  const grid = f >= v(p, gAt);
+  const side = (bl: Blk[], good: boolean, at: number, label: string, notes: string[]) => (
+    <Pop at={at} style={{ display: "flex", gap: 30, alignItems: "flex-start", flex: 1 }}>
+      <div style={{ flex: "none" }}>
+        <Artboard label={label} sel={good} style={{ width: W, height: H }} bg={p.s.bg || "#fff"}>
+          {bl.map((b, i) => <Block key={i} b={b} W={W} H={H} />)}
+          {good && grid && <div style={{ position: "absolute", inset: 0, opacity: interpolate(f, [v(p, gAt), v(p, gAt + 0.05)], [0, 1], clamp) }}>
+            {[8, 92].map((x) => <div key={x} style={{ position: "absolute", left: `${x}%`, top: 0, bottom: 0, width: 2, background: "rgba(232,69,139,.8)" }} />)}
+            {[8, 92].map((y) => <div key={y} style={{ position: "absolute", top: `${y}%`, left: 0, right: 0, height: 2, background: "rgba(232,69,139,.8)" }} />)}
+            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, borderLeft: "2px dashed rgba(47,123,255,.7)" }} />
+          </div>}
+        </Artboard>
+      </div>
+      <div style={{ flex: 1, paddingTop: 10 }}>
+        <Tag t={good ? (p.s.goodTag || "ঠিক") : (p.s.badTag || "ভুল")} c={good ? K.green : K.red} />
+        {notes.map((n, j) => (
+          <Fade key={j} at={at + 14 + j * 12} style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <div style={{ flex: "none", marginTop: 2 }}><Ico n={good ? "check" : "x"} c={good ? K.green : K.red} s={26} w={2.8} /></div>
+            <div style={{ fontFamily: BN, fontSize: 25, color: K.ink, lineHeight: 1.36 }}><Rich t={n} /></div>
+          </Fade>
+        ))}
+      </div>
+    </Pop>
+  );
+  return (
+    <Box style={{ top: 100, left: 90, right: 90 }}>
+      <Head t={p.s.head} kicker={p.s.kicker} size={46} />
+      <div style={{ display: "flex", gap: 34, marginTop: 14 }}>
+        {side(p.s.bad || [], false, v(p, 0.05), p.s.badLabel || "আগে", p.s.badNotes || [])}
+        {side(p.s.good || [], true, v(p, 0.4), p.s.goodLabel || "পরে", p.s.goodNotes || [])}
+      </div>
+    </Box>
+  );
+};
+
+/* ---------- vs: two columns of text (ভুল ধারণা বনাম সত্য / আগে বনাম এখন) ---------- */
+const SVs: React.FC<P> = (p) => {
+  const rows: [string, string][] = p.s.rows || [];
+  const L = p.s.left || "ভুল ধারণা", R = p.s.right || "আসল কথা";
+  return (
+    <Box style={{ justifyContent: "center" }}>
+      <Head t={p.s.head} kicker={p.s.kicker} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 26px" }}>
+        <Fade at={v(p, 0.03)}><Tag t={L} c={K.red} style={{ fontSize: 30 }} /></Fade><Fade at={v(p, 0.03)}><Tag t={R} c={K.green} style={{ fontSize: 30 }} /></Fade>
+        {rows.map(([a, b], i) => (
+          <React.Fragment key={i}>
+            <Fade at={v(p, 0.08 + (0.75 * i) / rows.length)} x={-30} y={0}><Card style={{ padding: "26px 28px", minHeight: 130, background: "#FFF6F6", display: "flex", gap: 14, alignItems: "center" }}><div style={{ flex: "none" }}><Ico n="x" c={K.red} s={36} w={2.8} /></div><div style={{ fontFamily: BN, fontSize: 34, color: K.ink, lineHeight: 1.38 }}><Rich t={a} /></div></Card></Fade>
+            <Fade at={v(p, 0.12 + (0.75 * i) / rows.length)} x={30} y={0}><Card style={{ padding: "26px 28px", minHeight: 130, background: "#F2FBF6", display: "flex", gap: 14, alignItems: "center" }}><div style={{ flex: "none" }}><Ico n="check" c={K.green} s={36} w={2.8} /></div><div style={{ fontFamily: BN, fontSize: 34, color: K.ink, lineHeight: 1.38 }}><Rich t={b} /></div></Card></Fade>
+          </React.Fragment>
+        ))}
+      </div>
+    </Box>
+  );
+};
+
+/* ---------- flow: numbered steps with arrows (a workflow) ---------- */
+const SFlow: React.FC<P> = (p) => {
+  const f = useCurrentFrame();
+  const st: { t: string; d?: string; i?: string; c?: string }[] = p.s.steps || [];
+  const at = (i: number) => v(p, 0.06 + (0.78 * i) / st.length);
+  const cur = st.reduce((c, _, i) => (f >= at(i) ? i : c), -1);
+  return (
+    <Box style={{ justifyContent: "center" }}>
+      <Head t={p.s.head} kicker={p.s.kicker} />
+      <div style={{ display: "flex", alignItems: "stretch" }}>
+        {st.map((x, i) => { const c = COL[x.c || ["b", "v", "p", "o", "g", "t"][i % 6]];
+          return (
+            <React.Fragment key={i}>
+              <Pop at={at(i)} style={{ flex: 1 }}>
+                <Card style={{ padding: "32px 26px", height: "100%", minHeight: 380, outline: cur === i ? `3px solid ${c}` : "none" }} edge={c}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}><div style={{ width: 54, height: 54, borderRadius: 16, background: `${c}18`, display: "grid", placeItems: "center" }}><Ico n={x.i || "star"} c={c} s={32} /></div><div style={{ fontFamily: EN, fontSize: 40, fontWeight: 700, color: c }}>{i + 1}</div></div>
+                  <div style={{ fontFamily: BN, fontSize: st.length > 4 ? 34 : 38, fontWeight: 700, color: K.ink, lineHeight: 1.25 }}><Rich t={x.t} /></div>
+                  {x.d && <div style={{ fontFamily: BN, fontSize: st.length > 4 ? 26 : 29, color: K.ink2, marginTop: 10, lineHeight: 1.4 }}><Rich t={x.d} /></div>}
+                </Card>
+              </Pop>
+              {i < st.length - 1 && <div style={{ flex: "none", width: 44, display: "grid", placeItems: "center", opacity: f >= at(i + 1) ? 1 : 0.2 }}><svg width="34" height="34" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke={K.dim} strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div>}
+            </React.Fragment>
+          ); })}
+      </div>
+      {p.s.foot && <Fade at={v(p, 0.88)} style={{ marginTop: 26, fontFamily: BN, fontSize: 27, color: K.ink2 }}><Rich t={p.s.foot} /></Fade>}
+    </Box>
+  );
+};
+
 /* ---------- note / mission / recap / outro ---------- */
 const SNote: React.FC<P> = (p) => {
   const c = COL[p.s.tone || "y"] || K.amber;
@@ -694,7 +825,7 @@ const SOutro: React.FC<P> = (p) => (
 const MAP: Record<string, React.FC<any>> = {
   title: STitle, points: SPoints, logotypes: SLogoTypes, small: SSmall, brands: SBrands, prompt: SPrompt, chat: SChat, compare: SCompare,
   transparent: STransparent, sizes: SSizes, wheel: SWheel, psych: SPsych, hex: SHex, palette: SPalette, contrast: SContrast, postmortem: SPost,
-  note: SNote, mission: SMission, recap: SRecap, outro: SOutro,
+  note: SNote, mission: SMission, recap: SRecap, outro: SOutro, fonts: SFonts, layout: SLayout, vs: SVs, flow: SFlow,
 };
 const DARK = new Set(["title", "outro"]);
 
