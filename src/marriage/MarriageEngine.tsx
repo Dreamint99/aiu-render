@@ -567,7 +567,43 @@ const SOutro: React.FC<P> = (p) => (
   </AbsoluteFill>
 );
 
-const MAP: Record<string, React.FC<any>> = { title: STitle, counsel: SCounsel, story: SStory, versus: SVersus, enemy: SEnemy, fact: SFact, points: SPoints, signals: SSignals, myth: SMyth, exercise: SExercise, help: SHelp, recap: SRecap, outro: SOutro };
+const SQuiz: React.FC<P & { answer?: boolean }> = (p) => {
+  const f = useCurrentFrame(); const { fps } = useVideoConfig();
+  const o: string[] = p.s.o || [], ans = p.answer, a = p.s.a;
+  const total = p.vo + (p.s.hold || 0), left = Math.max(0, Math.ceil((LEAD + total - f) / fps));
+  const ring = !ans && p.s.hold ? interpolate(f, [LEAD + p.vo, LEAD + total], [1, 0], clamp) : 0;
+  return (
+    <AbsoluteFill>
+      <Background />
+      <Box>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 22 }}>
+          <span style={{ fontFamily: BN, fontSize: 32, fontWeight: 700, color: "#fff", background: ans ? K.green : K.rose2, padding: "8px 26px", borderRadius: 30 }}>{ans ? "উত্তর" : `প্রশ্ন ${bn(p.s.n || 1)} — আপনি বলুন তো?`}</span>
+          {!ans && p.s.hold ? (
+            <div style={{ marginLeft: "auto", position: "relative", width: 112, height: 112 }}>
+              <svg width="112" height="112" viewBox="0 0 112 112"><circle cx="56" cy="56" r="48" stroke={K.roseL} strokeWidth="9" fill="#fff" /><circle cx="56" cy="56" r="48" stroke={K.rose} strokeWidth="9" fill="none" strokeDasharray={301.6} strokeDashoffset={301.6 * (1 - ring)} transform="rotate(-90 56 56)" strokeLinecap="round" /></svg>
+              <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontFamily: SERIF, fontSize: 52, color: K.plum }}>{bn(left)}</div>
+            </div>) : null}
+        </div>
+        <Fade at={4} style={{ fontFamily: BN, fontSize: 50, fontWeight: 600, color: K.ink, lineHeight: 1.35, marginBottom: 34 }}>{p.s.q}</Fade>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+          {o.map((x, i) => {
+            const ok = ans && i === a, dim = ans && i !== a;
+            return (
+              <Fade key={i} at={12 + i * 6}>
+                <div style={{ display: "flex", alignItems: "center", gap: 22, padding: "22px 26px", borderRadius: 24, background: ok ? K.greenL : K.paper, border: `2.5px solid ${ok ? K.green : K.line}`, opacity: dim ? 0.45 : 1, boxShadow: "0 10px 30px rgba(91,44,85,.08)", transform: ok ? `scale(${0.96 + 0.04 * Math.min(1, pop(f, fps, 10))})` : undefined }}>
+                  <span style={{ width: 58, height: 58, borderRadius: 29, background: ok ? K.green : K.roseL, color: ok ? "#fff" : K.plum, display: "grid", placeItems: "center", fontFamily: BN, fontSize: 32, fontWeight: 700, flex: "none" }}>{"কখগঘ"[i]}</span>
+                  <span style={{ fontFamily: BN, fontSize: 36, color: K.ink, lineHeight: 1.35 }}>{x}</span>
+                </div>
+              </Fade>);
+          })}
+        </div>
+        {ans && p.s.ex && <Fade at={v(p, 0.25)} style={{ marginTop: 30 }}><div style={{ fontFamily: BN, fontSize: 34, color: K.ink, lineHeight: 1.5 }}><span style={{ color: K.rose2, fontWeight: 700 }}>কারণ: </span><Rich t={p.s.ex} /></div></Fade>}
+      </Box>
+    </AbsoluteFill>
+  );
+};
+
+const MAP: Record<string, React.FC<any>> = { quizQ: SQuiz, quizA: (q: P) => <SQuiz {...q} answer />, title: STitle, counsel: SCounsel, story: SStory, versus: SVersus, enemy: SEnemy, fact: SFact, points: SPoints, signals: SSignals, myth: SMyth, exercise: SExercise, help: SHelp, recap: SRecap, outro: SOutro };
 
 /* ---------- chrome, subtitles, audio ---------- */
 const Chrome: React.FC<{ spec: Spec; total: number }> = ({ spec, total }) => {
