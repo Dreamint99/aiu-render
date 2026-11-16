@@ -475,25 +475,29 @@ const NODES: Record<string, { x: number; y: number; t: string; u: string }> = {
 const EDGE: Record<string, string> = { "mass>mole": "÷ M", "mole>mass": "× M", "mole>particles": "× 6.023×10²³", "particles>mole": "÷ 6.023×10²³", "mole>volume": "× 22.4 L", "volume>mole": "÷ 22.4 L" };
 const SMoleMap: React.FC<P> = (p) => {
   const f = useCurrentFrame(); const { fps } = useVideoConfig();
-  const path: string[] = p.s.path || ["mass", "mole", "particles"], vals: string[] = p.s.vals || [];
+  const path0: string[] = p.s.path || ["mass", "mole", "particles"], vals: string[] = p.s.vals || [];
+  // any step that is not one of the 4 nodes → draw a generic left-to-right chain of boxes (same travelling value)
+  const generic = path0.some((x) => !NODES[x]);
+  const N: typeof NODES = generic ? Object.fromEntries(path0.map((t, i) => [`g${i}`, { x: 260 + (1080 * i) / Math.max(1, path0.length - 1), y: 300, t, u: "" }])) : NODES;
+  const path = generic ? path0.map((_, i) => `g${i}`) : path0;
   const segs = path.length - 1, a0 = 0.18, a1 = 0.82;
   const prog = interpolate(f, [v(p, a0), v(p, a1)], [0, segs], clamp), si = Math.min(segs - 1, Math.floor(prog)), st = prog - si;
-  const A = NODES[path[si]], B = NODES[path[si + 1]] || A;
+  const A = N[path[si]], B = N[path[si + 1]] || A;
   const tx = lerp(A.x, B.x, Easing.inOut(Easing.quad)(Math.min(1, st))), ty = lerp(A.y, B.y, Easing.inOut(Easing.quad)(Math.min(1, st)));
   const reached = (i: number) => prog >= i - 0.02;
   return (
     <Box>
       {p.s.head && <Head t={p.s.head} />}
       <svg viewBox="0 0 1600 720" style={{ position: "absolute", left: 0, top: p.s.head ? 60 : 0, width: "100%", height: 720 * 1640 / 1600, overflow: "visible" }}>
-        {[["mass", "mole"], ["mole", "particles"], ["mole", "volume"]].map(([a, b], i) => { const A1 = NODES[a], B1 = NODES[b], on = path.some((x, k) => k < segs && ((x === a && path[k + 1] === b) || (x === b && path[k + 1] === a)));
-          const fw = EDGE[`${a}>${b}`], bw = EDGE[`${b}>${a}`], hor = A1.y === B1.y, mx = (A1.x + B1.x) / 2, my = (A1.y + B1.y) / 2;
+        {(generic ? path.slice(1).map((x, i) => [path[i], x]) : [["mass", "mole"], ["mole", "particles"], ["mole", "volume"]]).map(([a, b], i) => { const A1 = N[a], B1 = N[b], on = path.some((x, k) => k < segs && ((x === a && path[k + 1] === b) || (x === b && path[k + 1] === a)));
+          const fw = generic ? (p.s.ops || [])[path.indexOf(a)] || "" : EDGE[`${a}>${b}`], bw = generic ? "" : EDGE[`${b}>${a}`], hor = A1.y === B1.y, mx = (A1.x + B1.x) / 2, my = (A1.y + B1.y) / 2;
           return <g key={i} opacity={on ? 1 : 0.45}>
             <line x1={A1.x + (hor ? 150 : 0)} y1={A1.y + (hor ? -18 : 80)} x2={B1.x - (hor ? 150 : 0)} y2={B1.y + (hor ? -18 : -80)} stroke={K.chalk} strokeWidth={4} markerEnd="url(#ah)" />
             <line x1={B1.x - (hor ? 150 : 0)} y1={B1.y + (hor ? 22 : -80)} x2={A1.x + (hor ? 150 : 0)} y2={A1.y + (hor ? 22 : 80)} stroke={K.chalk} strokeWidth={4} opacity={0.55} markerEnd="url(#ah)" transform={hor ? undefined : "translate(40 0)"} />
             <text x={hor ? mx : mx - 30} y={hor ? my - 40 : my} textAnchor={hor ? "middle" : "end"} fontFamily={MATH} fontSize={34} fontWeight={700} fill={K.yellow}>{fw}</text>
             <text x={hor ? mx : mx + 70} y={hor ? my + 66 : my} textAnchor={hor ? "middle" : "start"} fontFamily={MATH} fontSize={30} fill={K.dim}>{bw}</text></g>; })}
         <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill={K.chalk} /></marker></defs>
-        {Object.entries(NODES).map(([k, n]) => { const idx = path.indexOf(k), lit = idx >= 0 && reached(idx);
+        {Object.entries(N).map(([k, n]) => { const idx = path.indexOf(k), lit = idx >= 0 && reached(idx);
           return <g key={k} transform={`translate(${n.x} ${n.y})`} opacity={Math.min(1, pop(f, fps, 6))}>
             <rect x={-145} y={-80} width={290} height={160} rx={26} fill={lit ? "rgba(255,229,138,.14)" : "rgba(10,20,14,.35)"} stroke={lit ? K.yellow : K.chalk} strokeWidth={lit ? 5 : 3} />
             <text y={-24} textAnchor="middle" fontFamily={BN} fontSize={40} fontWeight={600} fill={K.chalk}>{n.t}</text>
