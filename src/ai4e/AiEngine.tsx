@@ -383,14 +383,14 @@ const SCompare: React.FC<P> = (p) => {
       <div style={{ display: "flex", gap: 40, flex: 1 }}>
         <Fade at={v(p, 0.04)} style={{ flex: 0.8 }}>
           <Card style={{ padding: "30px 36px", height: "100%", borderColor: `${K.red}55` }} glow={K.red}>
-            <div style={{ fontFamily: BN, fontSize: 30, color: K.red, fontWeight: 700, marginBottom: 18 }}>✕ দুর্বল প্রম্পট</div>
+            <div style={{ fontFamily: BN, fontSize: 30, color: K.red, fontWeight: 700, marginBottom: 18 }}>✕ {p.s.badLabel || "দুর্বল প্রম্পট"}</div>
             <div style={{ fontFamily: BN, fontSize: 40, color: K.ink, lineHeight: 1.5, padding: "18px 24px", borderRadius: 18, background: "rgba(255,255,255,.05)" }}>{p.s.bad}</div>
             {p.s.badOut && <Fade at={v(p, 0.16)} style={{ fontFamily: BN, fontSize: 28, color: K.dim, marginTop: 22, lineHeight: 1.5 }}>ফল: {p.s.badOut}</Fade>}
           </Card>
         </Fade>
         <Fade at={tGood} style={{ flex: 1.2 }}>
           <Card style={{ padding: "30px 36px", height: "100%", borderColor: `${K.green}55` }} glow={K.green}>
-            <div style={{ fontFamily: BN, fontSize: 30, color: K.green, fontWeight: 700, marginBottom: 18 }}>✓ ভালো প্রম্পট</div>
+            <div style={{ fontFamily: BN, fontSize: 30, color: K.green, fontWeight: 700, marginBottom: 18 }}>✓ {p.s.goodLabel || "ভালো প্রম্পট"}</div>
             <div style={{ fontFamily: BN, fontSize: 34, color: K.ink, lineHeight: 1.6, padding: "18px 24px", borderRadius: 18, background: "rgba(255,255,255,.05)" }}><Rich t={p.s.good} /></div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 22 }}>
               {tags.map(([c, t], i) => <Pop key={i} at={tGood + 30 + i * 9}><span style={{ fontFamily: BN, fontSize: 26, fontWeight: 700, color: K.bg, background: COL[c] || K.sky, padding: "6px 18px", borderRadius: 20 }}>{t}</span></Pop>)}
