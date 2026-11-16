@@ -274,7 +274,7 @@ const SVs: React.FC<P> = (p) => {
           const at = v(p, 0.06 + (0.8 * i) / rows.length);
           return (
             <React.Fragment key={i}>
-              <Fade at={at} x={-30} y={0}><div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: K.redBg, border: `1.5px solid ${K.red}44`, fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.35 }}>✕ {a}</div></Fade>
+              <Fade at={at} x={-30} y={0}><div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: K.redBg, border: `1.5px solid ${K.red}44`, fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.35 }}>✕ <Rich t={a} /></div></Fade>
               <Fade at={at + 10} x={30} y={0}><div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: K.greenBg, border: `1.5px solid ${K.green}44`, fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.35 }}>✓ <Rich t={b} /></div></Fade>
             </React.Fragment>);
         })}
