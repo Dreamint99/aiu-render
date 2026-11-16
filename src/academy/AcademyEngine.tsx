@@ -223,7 +223,7 @@ const Notes: React.FC<{ p: P; list: { at: number; t: string; until?: number }[] 
   const cur = [...list].reverse().find((n) => frac >= n.at && (!n.until || frac < n.until));
   if (!cur) return null;
   const st = LEAD + p.vo * cur.at;
-  return <div key={cur.t} style={{ position: "absolute", left: 0, top: 0 }}><Write at={st} dur={14} style={{ fontFamily: HAND, fontSize: 46, color: K.yellow }}>{cur.t}</Write></div>;
+  return <div key={cur.t} style={{ position: "absolute", left: 0, right: 0, top: 0 }}><Write at={st} dur={14} style={{ fontFamily: HAND, fontSize: 46, color: K.yellow }}>{cur.t}</Write></div>;
 };
 
 /* ================= scenes ================= */
@@ -280,7 +280,7 @@ const SLab: React.FC<P> = (p) => (
     <div style={{ position: "relative", flex: 1 }}>
       <Stage p={p} st={p.s} top={p.s.head ? -10 : 40} />
       {p.s.meters && <Meters p={p} list={p.s.meters} />}
-      {p.s.notes && <div style={{ position: "absolute", left: 0, top: p.s.head ? -6 : 0 }}><Notes p={p} list={p.s.notes} /></div>}
+      {p.s.notes && <div style={{ position: "absolute", left: 0, right: 420, top: p.s.head ? -6 : 0 }}><Notes p={p} list={p.s.notes} /></div>}
     </div>
     {p.s.verdict && <Fade at={v(p, p.s.verdictAt ?? 0.82)} style={{ position: "absolute", left: 0, right: 0, bottom: -10, textAlign: "center" }}>
       <span style={{ display: "inline-block", fontFamily: BN, fontSize: 40, color: K.board, background: K.yellow, padding: "8px 30px 12px", borderRadius: 14, fontWeight: 600 }}>{p.s.verdict}</span></Fade>}
