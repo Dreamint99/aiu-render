@@ -337,7 +337,7 @@ const SCode: React.FC<P> = (p) => {
             {rows.map((_, i) => <div key={i} style={{ padding: "0 14px", opacity: (startLine + i) < lastTyped ? 1 : 0.3 }}>{startLine + i + 1}</div>)}
           </div>
           <div style={{ padding: "18px 24px", flex: 1, whiteSpace: "pre", color: C.ink }}>
-            {rows.map((r, i) => <div key={i}>{codeToken(r.ln.slice(0, r.n))}{r.active && r.n < r.ln.length && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>)}
+            {rows.map((r, i) => { const txt = r.ln.slice(0, r.n); return <div key={i} style={{ minHeight: "1.5em" }}>{txt ? codeToken(txt) : " "}{r.active && r.n < r.ln.length && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>; })}
           </div>
         </div>
         {run && <div style={{ flex: 1, background: "#07090D", borderTop: `1px solid ${C.line}`, padding: "14px 24px", fontFamily: MONO, fontSize: runFs, lineHeight: 1.5, overflow: "hidden" }}>
