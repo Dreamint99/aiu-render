@@ -181,7 +181,7 @@ const STool: React.FC<P> = (p) => {
 };
 
 /* ---------------- terminal (the star) ---------------- */
-type TLine = { t: "cmd" | "out" | "cmt" | "ok" | "warn"; s: string; host?: string };
+type TLine = { t: "cmd" | "out" | "cmt" | "ok" | "warn"; s: string; host?: string; cwd?: string };
 const HI: [RegExp, string][] = [
   [/\b(open|up|success|OK|PASS|ESTABLISHED|done|Running)\b/gi, C.green],
   [/\b(VULNERABLE|CRITICAL|FAILED|denied|error|closed|filtered|WARNING|unsafe)\b/gi, C.red],
@@ -207,9 +207,10 @@ function termRows(p: P, f: number) {
   let acc = 0; const rows: { l: TLine; n: number; typing: boolean; host: string; cwd: string; shown: boolean }[] = [];
   for (const l of lines) {
     const start = LEAD + acc * scale, end = LEAD + (acc + weight(l)) * scale; acc += weight(l);
-    if (f < start) { rows.push({ l, n: 0, typing: false, host, cwd, shown: false }); continue; }
-    if (l.t === "cmd") { const typeEnd = start + (end - start) * 0.75; const n = Math.round(l.s.length * Math.min(1, (f - start) / Math.max(1, typeEnd - start))); rows.push({ l, n, typing: n < l.s.length, host, cwd, shown: true }); }
-    else { const n = Math.round(l.s.length * Math.min(1, (f - start) / Math.max(1, (end - start) * 0.5))); rows.push({ l, n, typing: false, host, cwd, shown: true }); }
+    const lcwd = l.cwd || cwd;
+    if (f < start) { rows.push({ l, n: 0, typing: false, host, cwd: lcwd, shown: false }); continue; }
+    if (l.t === "cmd") { const typeEnd = start + (end - start) * 0.75; const n = Math.round(l.s.length * Math.min(1, (f - start) / Math.max(1, typeEnd - start))); rows.push({ l, n, typing: n < l.s.length, host, cwd: lcwd, shown: true }); }
+    else { const n = Math.round(l.s.length * Math.min(1, (f - start) / Math.max(1, (end - start) * 0.5))); rows.push({ l, n, typing: false, host, cwd: lcwd, shown: true }); }
   }
   return rows;
 }
@@ -222,7 +223,7 @@ const STerm: React.FC<P> = (p) => {
   const MAXV = 15; const vis = rows.slice(-MAXV);
   const caret = Math.floor(f / 8) % 2 === 0;
   return (
-    <AbsoluteFill style={{ padding: "70px 110px 150px" }}>
+    <AbsoluteFill style={{ padding: `70px 110px ${p.s.note ? 236 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: C.win, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 40px 110px rgba(0,0,0,.7), 0 0 60px rgba(63,224,139,.06)`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 50, background: C.head, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 10, padding: "0 18px" }}>
           <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FF5F57" }} /><span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FEBC2E" }} /><span style={{ width: 14, height: 14, borderRadius: "50%", background: "#28C840" }} />
@@ -243,7 +244,7 @@ const STerm: React.FC<P> = (p) => {
           {vis.length && !vis[vis.length - 1].typing && <span style={{ color: C.green, opacity: caret ? 1 : 0.15 }}>▋</span>}
         </div>
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 172, maxWidth: 560, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp), transform: `rotate(-1.5deg)` }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 34, maxWidth: 620, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp), transform: `rotate(-1.5deg)` }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
@@ -255,11 +256,11 @@ const SBrowser: React.FC<P> = (p) => {
   const shown = (p.s.payload || "").slice(0, payN);
   const fired = p.s.alert && f > v(p, 0.6);
   return (
-    <AbsoluteFill style={{ padding: "78px 150px 150px" }}>
+    <AbsoluteFill style={{ padding: `78px 150px ${p.s.note ? 236 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}`, boxShadow: "0 40px 110px rgba(0,0,0,.7)", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 54, background: "#DEE1E6", display: "flex", alignItems: "center", gap: 10, padding: "0 16px" }}>
           <span style={{ width: 13, height: 13, borderRadius: "50%", background: "#FF5F57" }} /><span style={{ width: 13, height: 13, borderRadius: "50%", background: "#FEBC2E" }} /><span style={{ width: 13, height: 13, borderRadius: "50%", background: "#28C840" }} />
-          <div style={{ marginLeft: 16, flex: 1, height: 34, background: "#fff", borderRadius: 18, display: "flex", alignItems: "center", gap: 10, padding: "0 16px", fontFamily: MONO, fontSize: 19, color: "#5F6368" }}><Lock size={15} color="#1A8754" />{p.s.url || "http://localhost/hack-lab"}</div>
+          <div style={{ marginLeft: 16, flex: 1, height: 34, background: "#fff", borderRadius: 18, display: "flex", alignItems: "center", gap: 10, padding: "0 16px", fontFamily: MONO, fontSize: 19, color: "#5F6368" }}>{(p.s.url || "http://localhost:8081").startsWith("https") ? <Lock size={15} color="#1A8754" /> : <Globe size={15} color="#9AA0A6" />}{p.s.url || "http://localhost:8081"}</div>
         </div>
         <div style={{ flex: 1, background: "#F6F7F9", padding: "44px 60px", color: "#1F2328", fontFamily: UI }}>
           <div style={{ fontFamily: BN, fontSize: 40, fontWeight: 700, color: "#111", marginBottom: 6 }}>{p.s.pageTitle || "আমাদের নিরাপদ হ্যাক ল্যাব"}</div>
@@ -276,7 +277,7 @@ const SBrowser: React.FC<P> = (p) => {
           </div>}
         </div>
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 170, bottom: 168, maxWidth: 520, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 26, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.7), v(p, 0.7) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 150, bottom: 34, maxWidth: 620, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 26, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.7), v(p, 0.7) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
@@ -307,35 +308,44 @@ const colorCode = (s: string) => {
 const SCode: React.FC<P> = (p) => {
   const f = useCurrentFrame();
   const code: string[] = p.s.code || []; const run = p.s.run;
+  // adaptive font so long scripts never get clipped, plus a bottom-anchored scroll window
+  const fs = code.length > 16 ? 19 : code.length > 12 ? 22 : code.length > 9 ? 25 : 27;
+  const lineH = Math.round(fs * 1.5);
+  const maxCodeLines = Math.max(6, Math.floor((run ? 470 : 780) / lineH));
   // type the code over the first ~55% of the scene, then the run output
   const codeEnd = v(p, 0.5), typed = Math.round(code.join("\n").length * interpolate(f, [LEAD, codeEnd], [0, 1], clamp));
-  let acc = 0; const rows = code.map((ln) => { const show = Math.max(0, Math.min(ln.length, typed - acc)); acc += ln.length + 1; return { ln, n: show, active: typed > acc - ln.length - 1 && typed <= acc }; });
-  const lastTyped = rows.filter((r) => r.n > 0).length;
-  const runStart = v(p, 0.6); const runN = run ? Math.floor((run.out || []).length * interpolate(f, [runStart, v(p, 0.92)], [0, 1], clamp)) : 0;
+  let acc = 0; const allRows = code.map((ln) => { const show = Math.max(0, Math.min(ln.length, typed - acc)); acc += ln.length + 1; return { ln, n: show, active: typed > acc - ln.length - 1 && typed <= acc }; });
+  const lastTyped = allRows.filter((r) => r.n > 0).length;
+  const startLine = Math.max(0, Math.min(lastTyped, code.length) - maxCodeLines);
+  const rows = allRows.slice(startLine, startLine + maxCodeLines);
+  const runStart = v(p, 0.6); const runFs = 24;
+  const runOut: string[] = run ? (run.out || []) : [];
+  const runN = run ? Math.floor(runOut.length * interpolate(f, [runStart, v(p, 0.92)], [0, 1], clamp)) : 0;
+  const runVisible = runOut.slice(0, runN).slice(-6);
   const caret = Math.floor(f / 8) % 2 === 0;
   return (
-    <AbsoluteFill style={{ padding: "64px 110px 150px" }}>
+    <AbsoluteFill style={{ padding: `64px 110px ${p.s.note ? 236 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: C.win, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 40px 110px rgba(0,0,0,.7)`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 48, background: C.head, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 12, padding: "0 16px" }}>
           <FileCode2 size={20} color={C.cyan} /><span style={{ fontFamily: MONO, fontSize: 21, color: C.ink }}>{p.s.file || "tool.py"}</span>
           <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 18, color: C.faint }}>{p.s.lang || "Python 3"}</span>
         </div>
-        <div style={{ flex: run ? 1.55 : 1, display: "flex", fontFamily: MONO, fontSize: 27, lineHeight: 1.5, overflow: "hidden" }}>
+        <div style={{ flex: run ? 1.55 : 1, display: "flex", fontFamily: MONO, fontSize: fs, lineHeight: 1.5, overflow: "hidden" }}>
           <div style={{ padding: "18px 0", background: "#0A0E14", color: C.faint, textAlign: "right", minWidth: 56, userSelect: "none" }}>
-            {code.map((_, i) => <div key={i} style={{ padding: "0 14px", opacity: i < lastTyped ? 1 : 0.3 }}>{i + 1}</div>)}
+            {rows.map((_, i) => <div key={i} style={{ padding: "0 14px", opacity: (startLine + i) < lastTyped ? 1 : 0.3 }}>{startLine + i + 1}</div>)}
           </div>
-          <div style={{ padding: "18px 24px", flex: 1, whiteSpace: "pre" }}>
+          <div style={{ padding: "18px 24px", flex: 1, whiteSpace: "pre", color: C.ink }}>
             {rows.map((r, i) => <div key={i}>{codeToken(r.ln.slice(0, r.n))}{r.active && r.n < r.ln.length && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>)}
           </div>
         </div>
-        {run && <div style={{ flex: 1, background: "#07090D", borderTop: `1px solid ${C.line}`, padding: "14px 24px", fontFamily: MONO, fontSize: 25, lineHeight: 1.5, overflow: "hidden" }}>
+        {run && <div style={{ flex: 1, background: "#07090D", borderTop: `1px solid ${C.line}`, padding: "14px 24px", fontFamily: MONO, fontSize: runFs, lineHeight: 1.5, overflow: "hidden" }}>
           <div style={{ color: C.faint, fontSize: 18, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}><Play size={14} color={C.green} /> TERMINAL</div>
           <div><span style={{ color: C.green }}>$ </span><span style={{ color: C.ink }}>{run.cmd}</span></div>
-          {(run.out || []).slice(0, runN).map((o: string, i: number) => <div key={i}>{tokenize(o, C.mute)}</div>)}
+          {runVisible.map((o: string, i: number) => <div key={i}>{tokenize(o, C.mute)}</div>)}
           {runN > 0 && <span style={{ color: C.green, opacity: caret ? 1 : 0.15 }}>▋</span>}
         </div>}
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 170, maxWidth: 540, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 34, maxWidth: 540, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
