@@ -181,7 +181,7 @@ const STool: React.FC<P> = (p) => {
 };
 
 /* ---------------- terminal (the star) ---------------- */
-type TLine = { t: "cmd" | "out" | "cmt" | "ok" | "warn"; s: string; host?: string; cwd?: string };
+type TLine = { t: "cmd" | "out" | "cmt" | "ok" | "warn"; s: string; host?: string; cwd?: string; prompt?: string };
 const HI: [RegExp, string][] = [
   [/\b(open|up|success|OK|PASS|ESTABLISHED|done|Running)\b/gi, C.green],
   [/\b(VULNERABLE|CRITICAL|FAILED|denied|error|closed|filtered|WARNING|unsafe)\b/gi, C.red],
@@ -223,7 +223,7 @@ const STerm: React.FC<P> = (p) => {
   const MAXV = 15; const vis = rows.slice(-MAXV);
   const caret = Math.floor(f / 8) % 2 === 0;
   return (
-    <AbsoluteFill style={{ padding: `70px 110px ${p.s.note ? 236 : 150}px` }}>
+    <AbsoluteFill style={{ padding: `70px 110px ${p.s.note ? 300 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: C.win, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 40px 110px rgba(0,0,0,.7), 0 0 60px rgba(63,224,139,.06)`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 50, background: C.head, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 10, padding: "0 18px" }}>
           <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FF5F57" }} /><span style={{ width: 14, height: 14, borderRadius: "50%", background: "#FEBC2E" }} /><span style={{ width: 14, height: 14, borderRadius: "50%", background: "#28C840" }} />
@@ -235,8 +235,10 @@ const STerm: React.FC<P> = (p) => {
             const text = r.l.s.slice(0, r.n);
             if (r.l.t === "cmd") return (
               <div key={i} style={{ marginTop: i ? 10 : 0 }}>
-                <PromptLine host={r.host} cwd={r.cwd} />
-                <div><span style={{ color: C.green }}>└─</span><span style={{ color: C.red, fontWeight: 700 }}>$ </span><span style={{ color: C.ink }}>{text}</span>{r.typing && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>
+                {r.l.prompt
+                  ? <div><span style={{ color: C.cyan, fontWeight: 700 }}>{r.l.prompt}</span><span style={{ color: C.ink }}>{text}</span>{r.typing && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>
+                  : <><PromptLine host={r.host} cwd={r.cwd} />
+                      <div><span style={{ color: C.green }}>└─</span><span style={{ color: C.red, fontWeight: 700 }}>$ </span><span style={{ color: C.ink }}>{text}</span>{r.typing && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div></>}
               </div>);
             const base = r.l.t === "cmt" ? C.faint : r.l.t === "ok" ? C.green : r.l.t === "warn" ? C.red : C.mute;
             return <div key={i} style={{ whiteSpace: "pre-wrap" }}>{r.l.t === "cmt" ? <span style={{ color: C.faint }}>{text}</span> : tokenize(text, base)}</div>;
@@ -244,7 +246,7 @@ const STerm: React.FC<P> = (p) => {
           {vis.length && !vis[vis.length - 1].typing && <span style={{ color: C.green, opacity: caret ? 1 : 0.15 }}>▋</span>}
         </div>
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 34, maxWidth: 620, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp), transform: `rotate(-1.5deg)` }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 110, bottom: 150, maxWidth: 560, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp), transform: `rotate(-1.5deg)` }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
@@ -256,7 +258,7 @@ const SBrowser: React.FC<P> = (p) => {
   const shown = (p.s.payload || "").slice(0, payN);
   const fired = p.s.alert && f > v(p, 0.6);
   return (
-    <AbsoluteFill style={{ padding: `78px 150px ${p.s.note ? 236 : 150}px` }}>
+    <AbsoluteFill style={{ padding: `78px 150px ${p.s.note ? 300 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: "#fff", borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}`, boxShadow: "0 40px 110px rgba(0,0,0,.7)", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 54, background: "#DEE1E6", display: "flex", alignItems: "center", gap: 10, padding: "0 16px" }}>
           <span style={{ width: 13, height: 13, borderRadius: "50%", background: "#FF5F57" }} /><span style={{ width: 13, height: 13, borderRadius: "50%", background: "#FEBC2E" }} /><span style={{ width: 13, height: 13, borderRadius: "50%", background: "#28C840" }} />
@@ -277,7 +279,7 @@ const SBrowser: React.FC<P> = (p) => {
           </div>}
         </div>
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 150, bottom: 34, maxWidth: 620, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 26, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.7), v(p, 0.7) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 110, bottom: 150, maxWidth: 560, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 26, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.7), v(p, 0.7) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
@@ -324,7 +326,7 @@ const SCode: React.FC<P> = (p) => {
   const runVisible = runOut.slice(0, runN).slice(-6);
   const caret = Math.floor(f / 8) % 2 === 0;
   return (
-    <AbsoluteFill style={{ padding: `64px 110px ${p.s.note ? 236 : 150}px` }}>
+    <AbsoluteFill style={{ padding: `64px 110px ${p.s.note ? 300 : 150}px` }}>
       <div style={{ width: "100%", height: "100%", background: C.win, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 40px 110px rgba(0,0,0,.7)`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div style={{ height: 48, background: C.head, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 12, padding: "0 16px" }}>
           <FileCode2 size={20} color={C.cyan} /><span style={{ fontFamily: MONO, fontSize: 21, color: C.ink }}>{p.s.file || "tool.py"}</span>
@@ -345,7 +347,7 @@ const SCode: React.FC<P> = (p) => {
           {runN > 0 && <span style={{ color: C.green, opacity: caret ? 1 : 0.15 }}>▋</span>}
         </div>}
       </div>
-      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 34, maxWidth: 540, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
+      {p.s.note && <div style={{ position: "absolute", right: 110, bottom: 150, maxWidth: 540, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
     </AbsoluteFill>
   );
 };
