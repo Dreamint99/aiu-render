@@ -261,21 +261,54 @@ const STest: React.FC<P> = (p) => {
   );
 };
 
-/* ---------- ফাঁদ বনাম আসল (row by row) ---------- */
+/* ---------- ফাঁদ বনাম আসল (row by row) ----------
+   tone: "bad-good" (default: left ✕ red, right ✓ green) · "good-bad" (left ✓ green, right ✕ red)
+         "neutral" (two plain columns, no ✕/✓) · "table" (key → value rows; 3-item rows = key + two columns) */
 const SVs: React.FC<P> = (p) => {
-  const rows: [string, string][] = p.s.rows || [];
+  const rows: string[][] = p.s.rows || [];
+  const three = rows.some((r) => r.length >= 3);
+  const tone: string = p.s.tone || (three ? "table" : "bad-good");
+  const cell = (bg: string, bd: string, mark: string, t: string, bold = false) => (
+    <div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: bg, border: `1.5px solid ${bd}`, fontFamily: BN, fontSize: 32, fontWeight: bold ? 800 : 400, color: K.ink, lineHeight: 1.35 }}>{mark}<Rich t={t} /></div>);
+  const plain = (t: string, bold = false) => cell(bold ? K.paper2 : "#fff", K.line, "", t, bold);
+  const hd = (t: string, c: string, ico: string | null, at: number) => (
+    <Fade at={at} style={{ fontFamily: BN, fontSize: 34, fontWeight: 800, color: c, display: "flex", gap: 12, alignItems: "center" }}>{ico && <Ico n={ico} c={c} s={34} w={2.3} />}{t}</Fade>);
+  if (tone === "table") {
+    const cols = three ? "0.8fr 1fr 1fr" : "0.8fr 1.6fr";
+    return (
+      <Box>
+        <Head t={p.s.head} kicker={p.s.kicker} />
+        <div style={{ display: "grid", gridTemplateColumns: cols, gap: "14px 24px" }}>
+          {three && <><div />{hd(p.s.left || "", K.royal, null, 4)}{hd(p.s.right || "", K.royal, null, 8)}</>}
+          {rows.map((r, i) => {
+            const at = v(p, 0.06 + (0.8 * i) / rows.length);
+            return (
+              <React.Fragment key={i}>
+                <Fade at={at} x={-30} y={0}>{plain(r[0], true)}</Fade>
+                <Fade at={at + 8} x={30} y={0}>{plain(r[1] || "")}</Fade>
+                {three && <Fade at={at + 16} x={30} y={0}>{plain(r[2] || "")}</Fade>}
+              </React.Fragment>);
+          })}
+        </div>
+      </Box>
+    );
+  }
+  const neutral = tone === "neutral", flip = tone === "good-bad";
+  const bad = { c: K.red, bg: K.redBg, bd: `${K.red}44`, m: "✕ ", ico: "flag" };
+  const good = { c: K.green, bg: K.greenBg, bd: `${K.green}44`, m: "✓ ", ico: "shield" };
+  const L = neutral ? null : flip ? good : bad, R = neutral ? null : flip ? bad : good;
   return (
     <Box>
       <Head t={p.s.head} kicker={p.s.kicker} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 30px" }}>
-        <Fade at={4} style={{ fontFamily: BN, fontSize: 34, fontWeight: 800, color: K.red, display: "flex", gap: 12, alignItems: "center" }}><Ico n="flag" c={K.red} s={34} w={2.3} />{p.s.left || "ফাঁদ"}</Fade>
-        <Fade at={8} style={{ fontFamily: BN, fontSize: 34, fontWeight: 800, color: K.green, display: "flex", gap: 12, alignItems: "center" }}><Ico n="shield" c={K.green} s={34} w={2.3} />{p.s.right || "আসল কাজ"}</Fade>
+        {hd(p.s.left || (neutral ? "" : flip ? "আসল কাজ" : "ফাঁদ"), L ? L.c : K.royal, L ? L.ico : null, 4)}
+        {hd(p.s.right || (neutral ? "" : flip ? "ফাঁদ" : "আসল কাজ"), R ? R.c : K.royal, R ? R.ico : null, 8)}
         {rows.map(([a, b], i) => {
           const at = v(p, 0.06 + (0.8 * i) / rows.length);
           return (
             <React.Fragment key={i}>
-              <Fade at={at} x={-30} y={0}><div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: K.redBg, border: `1.5px solid ${K.red}44`, fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.35 }}>✕ <Rich t={a} /></div></Fade>
-              <Fade at={at + 10} x={30} y={0}><div style={{ height: "100%", boxSizing: "border-box", padding: "20px 26px", borderRadius: 16, background: K.greenBg, border: `1.5px solid ${K.green}44`, fontFamily: BN, fontSize: 32, color: K.ink, lineHeight: 1.35 }}>✓ <Rich t={b} /></div></Fade>
+              <Fade at={at} x={-30} y={0}>{L ? cell(L.bg, L.bd, L.m, a) : plain(a)}</Fade>
+              <Fade at={at + 10} x={30} y={0}>{R ? cell(R.bg, R.bd, R.m, b) : plain(b)}</Fade>
             </React.Fragment>);
         })}
       </div>
@@ -283,9 +316,6 @@ const SVs: React.FC<P> = (p) => {
   );
 };
 
-const BarNote: React.FC<{ t: string }> = ({ t }) => (
-  <div style={{ marginLeft: "auto", maxWidth: 560, fontFamily: BN, fontSize: 15, lineHeight: 1.2, color: "#5A6275", textAlign: "right" }}>{t}</div>
-);
 /* ---------- browser walkthrough: real screenshot, cursor, zoom-to-part, callouts ---------- */
 type Focus = { x: number; y: number; w: number; h: number; at: number; label?: string; zoom?: number; side?: "top" | "bottom" };
 const FW = 1500, PW = 1440, PH = 900; // frame width, page CSS size of the capture
