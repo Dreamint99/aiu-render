@@ -9,6 +9,7 @@ import { AbsoluteFill, Audio, Img, Sequence, interpolate, spring, staticFile, us
 import {
   ShieldCheck, ShieldAlert, Skull, Scale, Lock, Terminal, Globe, Bug, KeyRound, Fish, Wifi, Cpu, Server, Search, Eye, EyeOff,
   Download, CheckCircle2, XCircle, AlertTriangle, ChevronRight, Sparkles, BookOpen, Wrench, Boxes, HardDrive, Network, Brain, Fingerprint, UserCheck,
+  Play, FileCode2, Code2, Folder, GitBranch,
 } from "lucide-react";
 
 /* ---------------- theme ---------------- */
@@ -34,7 +35,7 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[+d]);
 const pop = (f: number, fps: number, d: number) => spring({ frame: f - d, fps, config: { damping: 14, mass: 0.7 } });
-const ICO: Record<string, React.FC<any>> = { shield: ShieldCheck, alert: ShieldAlert, skull: Skull, scale: Scale, lock: Lock, terminal: Terminal, globe: Globe, bug: Bug, key: KeyRound, fish: Fish, wifi: Wifi, cpu: Cpu, server: Server, search: Search, eye: Eye, eyeoff: EyeOff, download: Download, check: CheckCircle2, x: XCircle, warn: AlertTriangle, spark: Sparkles, book: BookOpen, wrench: Wrench, box: Boxes, disk: HardDrive, net: Network, brain: Brain, finger: Fingerprint, user: UserCheck };
+const ICO: Record<string, React.FC<any>> = { shield: ShieldCheck, alert: ShieldAlert, skull: Skull, scale: Scale, lock: Lock, terminal: Terminal, globe: Globe, bug: Bug, key: KeyRound, fish: Fish, wifi: Wifi, cpu: Cpu, server: Server, search: Search, eye: Eye, eyeoff: EyeOff, download: Download, check: CheckCircle2, x: XCircle, warn: AlertTriangle, spark: Sparkles, book: BookOpen, wrench: Wrench, box: Boxes, disk: HardDrive, net: Network, brain: Brain, finger: Fingerprint, user: UserCheck, code: Code2, python: FileCode2, play: Play };
 
 export type Scene = { type: string; vo: string; frames: number; hold?: number; [k: string]: any };
 export type Spec = { id: string; course: string; lessonNo: string; module?: string; title: string; next: string; host?: string; scenes: Scene[] };
@@ -280,6 +281,65 @@ const SBrowser: React.FC<P> = (p) => {
   );
 };
 
+/* ---------------- code (editor + run output) ---------------- */
+const KW = new Set("import from def return for in if elif else while with as class try except finally raise pass break continue lambda and or not is None True False print len range open int str list dict set range enumerate yield global await async".split(" "));
+const codeToken = (s: string) => {
+  const hashIdx = s.indexOf("#");
+  if (hashIdx >= 0 && !/["'][^"']*#/.test(s.slice(0, hashIdx + 1))) {
+    return <><span>{colorCode(s.slice(0, hashIdx))}</span><span style={{ color: C.faint, fontStyle: "italic" }}>{s.slice(hashIdx)}</span></>;
+  }
+  return colorCode(s);
+};
+const colorCode = (s: string) => {
+  const out: React.ReactNode[] = []; let i = 0, k = 0;
+  const re = /(\"[^\"]*\"|'[^']*'|\b\d+\.?\d*\b|[A-Za-z_][A-Za-z0-9_]*)/g; let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    if (m.index > i) out.push(<span key={k++}>{s.slice(i, m.index)}</span>);
+    const t = m[0];
+    let col = C.ink;
+    if (/^["']/.test(t)) col = "#A5E075"; else if (/^\d/.test(t)) col = C.cyan; else if (KW.has(t)) col = C.purple;
+    else if (s[re.lastIndex] === "(") col = C.blue;
+    out.push(<span key={k++} style={{ color: col }}>{t}</span>); i = re.lastIndex;
+  }
+  if (i < s.length) out.push(<span key={k++}>{s.slice(i)}</span>);
+  return <>{out}</>;
+};
+const SCode: React.FC<P> = (p) => {
+  const f = useCurrentFrame();
+  const code: string[] = p.s.code || []; const run = p.s.run;
+  // type the code over the first ~55% of the scene, then the run output
+  const codeEnd = v(p, 0.5), typed = Math.round(code.join("\n").length * interpolate(f, [LEAD, codeEnd], [0, 1], clamp));
+  let acc = 0; const rows = code.map((ln) => { const show = Math.max(0, Math.min(ln.length, typed - acc)); acc += ln.length + 1; return { ln, n: show, active: typed > acc - ln.length - 1 && typed <= acc }; });
+  const lastTyped = rows.filter((r) => r.n > 0).length;
+  const runStart = v(p, 0.6); const runN = run ? Math.floor((run.out || []).length * interpolate(f, [runStart, v(p, 0.92)], [0, 1], clamp)) : 0;
+  const caret = Math.floor(f / 8) % 2 === 0;
+  return (
+    <AbsoluteFill style={{ padding: "64px 110px 150px" }}>
+      <div style={{ width: "100%", height: "100%", background: C.win, borderRadius: 14, border: `1px solid ${C.line}`, boxShadow: `0 40px 110px rgba(0,0,0,.7)`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ height: 48, background: C.head, borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 12, padding: "0 16px" }}>
+          <FileCode2 size={20} color={C.cyan} /><span style={{ fontFamily: MONO, fontSize: 21, color: C.ink }}>{p.s.file || "tool.py"}</span>
+          <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 18, color: C.faint }}>{p.s.lang || "Python 3"}</span>
+        </div>
+        <div style={{ flex: run ? 1.55 : 1, display: "flex", fontFamily: MONO, fontSize: 27, lineHeight: 1.5, overflow: "hidden" }}>
+          <div style={{ padding: "18px 0", background: "#0A0E14", color: C.faint, textAlign: "right", minWidth: 56, userSelect: "none" }}>
+            {code.map((_, i) => <div key={i} style={{ padding: "0 14px", opacity: i < lastTyped ? 1 : 0.3 }}>{i + 1}</div>)}
+          </div>
+          <div style={{ padding: "18px 24px", flex: 1, whiteSpace: "pre" }}>
+            {rows.map((r, i) => <div key={i}>{codeToken(r.ln.slice(0, r.n))}{r.active && r.n < r.ln.length && <span style={{ color: C.green, opacity: caret ? 1 : 0.1 }}>▋</span>}</div>)}
+          </div>
+        </div>
+        {run && <div style={{ flex: 1, background: "#07090D", borderTop: `1px solid ${C.line}`, padding: "14px 24px", fontFamily: MONO, fontSize: 25, lineHeight: 1.5, overflow: "hidden" }}>
+          <div style={{ color: C.faint, fontSize: 18, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}><Play size={14} color={C.green} /> TERMINAL</div>
+          <div><span style={{ color: C.green }}>$ </span><span style={{ color: C.ink }}>{run.cmd}</span></div>
+          {(run.out || []).slice(0, runN).map((o: string, i: number) => <div key={i}>{tokenize(o, C.mute)}</div>)}
+          {runN > 0 && <span style={{ color: C.green, opacity: caret ? 1 : 0.15 }}>▋</span>}
+        </div>}
+      </div>
+      {p.s.note && <div style={{ position: "absolute", right: 130, bottom: 170, maxWidth: 540, background: C.amber, color: "#1A1205", borderRadius: 14, padding: "14px 20px", fontFamily: BN, fontSize: 27, fontWeight: 600, lineHeight: 1.4, boxShadow: "4px 4px 0 rgba(0,0,0,.4)", opacity: interpolate(f, [v(p, 0.5), v(p, 0.5) + 12], [0, 1], clamp) }}>💡 {p.s.note}</div>}
+    </AbsoluteFill>
+  );
+};
+
 /* ---------------- compare (attack vs defense) ---------------- */
 const SCompare: React.FC<P> = (p) => {
   const f = useCurrentFrame(); const L = p.s.left || {}, R = p.s.right || {};
@@ -352,7 +412,7 @@ const SOutro: React.FC<P> = (p) => {
 };
 
 /* ---------------- frame ---------------- */
-const MAP: Record<string, React.FC<any>> = { title: STitle, points: SPoints, hats: SHats, warn: SWarn, tool: STool, term: STerm, browser: SBrowser, compare: SCompare, recap: SRecap, outro: SOutro, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer /> };
+const MAP: Record<string, React.FC<any>> = { title: STitle, points: SPoints, hats: SHats, warn: SWarn, tool: STool, term: STerm, code: SCode, browser: SBrowser, compare: SCompare, recap: SRecap, outro: SOutro, quizQ: SQuiz, quizA: (p: P) => <SQuiz {...p} answer /> };
 
 const subChunks = (spec: Spec, starts: number[]) => spec.scenes.flatMap((s, i) => {
   const parts = s.vo.split(/(?<=[।?!,—])\s+/).reduce<string[]>((a, x) => { if (a.length && (a[a.length - 1].length < 26 || x.length < 10)) a[a.length - 1] += " " + x; else a.push(x); return a; }, []);
@@ -369,7 +429,7 @@ export const HackVideo: React.FC<{ spec: Spec }> = ({ spec }) => {
   const starts = lens.reduce<number[]>((a, _, i) => [...a, i ? a[i - 1] + lens[i - 1] : 15], []);
   const chunks = subChunks(spec, starts), cur = chunks.find((x) => f >= x.from && f < x.to + 4);
   const total = hackLen(spec);
-  const busy = (fr: number) => spec.scenes.some((s, i) => s.type === "term" && fr >= starts[i] && fr <= starts[i] + sceneLen(s));
+  const busy = (fr: number) => spec.scenes.some((s, i) => (s.type === "term" || s.type === "code") && fr >= starts[i] && fr <= starts[i] + sceneLen(s));
   return (
     <AbsoluteFill style={{ background: C.bg0 }}>
       <Scan />
