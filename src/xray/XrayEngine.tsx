@@ -369,8 +369,8 @@ const NodeBox: React.FC<{ n: XNode; f: number; active: number; xo: number; rows:
     <div style={{ ...glass, width: n.w || 330, padding: "0 0 10px", borderRadius: "50% / 26px", overflow: "hidden" }}>
       <div style={{ height: 52, background: "rgba(92,225,255,.12)", borderBottom: `2px solid ${C.xline}`, borderRadius: "50%", display: "grid", placeItems: "center" }}><Database size={26} color={C.cyan} /></div>
       <div style={{ padding: "8px 16px 0", fontFamily: MONO, fontSize: 15.5, color: C.xink }}>
-        {n.cols && <div style={{ display: "flex", color: C.cyan, borderBottom: `1px solid ${C.xline}`, paddingBottom: 4 }}>{n.cols.map((c, i) => <span key={i} style={{ flex: i ? 1 : 0.6 }}>{c}</span>)}</div>}
-        {rows.slice(-4).map((r, i, arr) => { const isNew = newRow >= 0 && i === arr.length - 1 && rows.length > (n.rows || []).length; return <div key={i} style={{ display: "flex", padding: "3px 0", background: isNew ? `rgba(18,161,80,${0.45 * newRow})` : undefined, color: isNew ? "#B9FBD0" : C.xink, transform: isNew ? `translateX(${(1 - newRow) * 30}px)` : undefined }}>{r.map((c, j) => <span key={j} style={{ flex: j ? 1 : 0.6, overflow: "hidden", whiteSpace: "nowrap" }}>{c}</span>)}</div>; })}
+        {n.cols && <div style={{ display: "flex", color: C.cyan, borderBottom: `1px solid ${C.xline}`, paddingBottom: 4 }}>{n.cols.map((c, i) => <span key={i} style={{ flex: i ? 1 : 0.6, minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", paddingRight: 8 }}>{c}</span>)}</div>}
+        {rows.slice(-4).map((r, i, arr) => { const isNew = newRow >= 0 && i === arr.length - 1 && rows.length > (n.rows || []).length; return <div key={i} style={{ display: "flex", padding: "3px 0", background: isNew ? `rgba(18,161,80,${0.45 * newRow})` : undefined, color: isNew ? "#B9FBD0" : C.xink, transform: isNew ? `translateX(${(1 - newRow) * 30}px)` : undefined }}>{r.map((c, j) => <span key={j} style={{ flex: j ? 1 : 0.6, minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", paddingRight: 8 }}>{c}</span>)}</div>; })}
       </div>
     </div>);
   else if (n.kind === "server" || n.kind === "lb") body = (
